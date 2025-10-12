@@ -1,40 +1,112 @@
-# 🛡️ ShadowVault Protocol
+# 🔐 ShadowVault Protocol
 
-**Privacy-Preserving DeFi Vault on Solana**
+> Privacy-first institutional DeFi aggregator using Arcium's encrypted compute on Solana
 
-A decentralized vault protocol enabling private trading strategies through encrypted commitments, intent-based execution, and MEV protection. Built with Anchor 0.29.0 for the Solana blockchain.
+**🏆 Built for Arcium's <encrypted> Side Track | Cypherpunk Hackathon**
 
-[![Solana](https://img.shields.io/badge/Solana-Devnet-9945FF?logo=solana)](https://solana.com)
-[![Anchor](https://img.shields.io/badge/Anchor-0.29.0-663399)](https://www.anchor-lang.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-## 🚀 **LIVE DEPLOYMENT**
-
-**Program ID**: `HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe`  
-**Network**: Solana Devnet  
-**Status**: ✅ Deployed & Verified  
-**Explorer**: [View on Solana Explorer](https://explorer.solana.com/address/HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe?cluster=devnet)
+[![Solana](https://img.shields.io/badge/Solana-Devnet-14F195?logo=solana)](https://explorer.solana.com/address/HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe?cluster=devnet)
+[![Arcium](https://img.shields.io/badge/Powered%20by-Arcium-7C3AED)](https://arcium.com)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ---
 
-## 🎯 Overview
+## 🚀 Live Deployment
 
-ShadowVault Protocol enables private trade execution on Solana using Arcium's MPC network.
+- **Smart Contract:** [View on Solana Explorer](https://explorer.solana.com/address/HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe?cluster=devnet)
+- **Program ID:** `HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe`
+- **Network:** Solana Devnet
+- **Status:** ✅ Deployed & Verified
+- **Frontend:** Production-ready Next.js application (run `npm run dev`)
 
-Users submit encrypted trade intents where size, slippage, and strategy remain hidden. Arcium's MPC network computes optimal routing across DEXs (Jupiter, Raydium, Orca) privately, then executes on-chain without revealing sensitive information.
+---
 
-### **DEPLOYED CONTRACT**
-- **Program ID**: HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe
-- **Network**: Solana Devnet
-- **Status**: Live and Verified
+## 🎯 Problem & Solution
 
-### **TECHNICAL STACK**
-- Anchor 0.29.0 (Solana smart contracts)
-- Arcium SDK (encrypted compute)
-- Next.js 14 (TypeScript frontend)
-- Full documentation included
+### The Problem
+Institutional traders on Solana face critical privacy challenges:
+- 💸 **2-8% losses** to MEV and front-running
+- 🔓 **All trades visible** on public blockchain
+- 📊 **Strategy copying** by competitors
+- 🚫 **$3T institutional capital** staying away from DeFi
+
+### Our Solution
+ShadowVault uses **Arcium's encrypted compute** to enable:
+- 🔒 **Encrypted trade intents** - Size, slippage, strategy hidden
+- 🔐 **Private MPC routing** - Optimal DEX routing computed securely
+- ⚡ **On-chain execution** - Fast Solana settlement
+- 🛡️ **Zero leakage** - Complete information protection
 
 This solves the $100B+ institutional DeFi adoption problem by preventing MEV extraction, front-running, and strategy leaks while maintaining Solana's speed and low costs.
+
+---
+
+## 🔐 Arcium Integration (How We Use Encrypted Compute)
+
+### Architecture Flow
+
+```
+1️⃣ Client-Side Encryption
+   User Input → Arcium SDK → Encrypted Intent
+                    ↓
+            32-byte commitment hash
+
+2️⃣ MPC Network Processing
+   Encrypted Intent → Arcium MPC → Private Computation
+                           ↓
+           Optimal Route (Jupiter, Raydium, Orca)
+                           ↓
+                   No Data Exposed
+
+3️⃣ On-Chain Execution
+   Solana Program → Encrypted Params → Trade Execution
+                           ↓
+                   Zero Knowledge Proof
+```
+
+### Implementation Details
+
+#### 1. Client-Side Encryption
+```typescript
+// User's trade intent encrypted before submission
+const encryptedIntent = await arciumClient.encrypt({
+  tokenIn: "SOL",
+  tokenOut: "USDC", 
+  amount: 1000000000, // 1 SOL
+  maxSlippage: 50, // 0.5%
+  strategy: "TWAP"
+});
+```
+
+#### 2. MPC Network Computation
+```typescript
+// Arcium MPC computes optimal routing privately
+const mpcResult = await arciumMPC.computeRoute({
+  encryptedIntent,
+  dexOptions: ["Jupiter", "Raydium", "Orca"],
+  optimizationGoal: "BEST_PRICE"
+});
+// Result is encrypted - no party sees the strategy
+```
+
+#### 3. Smart Contract Execution
+```rust
+// Smart contract receives encrypted execution plan
+pub fn execute_trade(
+    ctx: Context<ExecuteTrade>,
+    encrypted_params: [u8; 32], // From Arcium MPC
+) -> Result<()> {
+    // Verify MPC signature
+    // Execute without revealing strategy
+    // Emit minimal metadata
+}
+```
+
+### Privacy Benefits
+- ✅ **Trade size hidden** until execution
+- ✅ **Strategy parameters encrypted** on-chain
+- ✅ **Routing logic private** via MPC
+- ✅ **MEV protection** through information asymmetry
+- ✅ **Zero-knowledge proofs** of optimality
 
 ---
 
@@ -46,6 +118,35 @@ This solves the $100B+ institutional DeFi adoption problem by preventing MEV ext
 - **⚡ On-Chain Settlement**: Transparent execution with minimal metadata leakage
 - **🔒 Secure Custody**: PDA-based token custody with owner-only withdrawal controls
 - **🚨 Emergency Controls**: Pause mechanism for risk mitigation
+
+---
+
+## 💻 Tech Stack
+
+### Smart Contracts
+- **Anchor 0.29.0** - Solana framework
+- **Rust** - Security-focused language
+- **500+ lines** - Production-ready code
+- **6 Instructions** - Complete functionality
+
+### Privacy Layer
+- **Arcium SDK** - Encrypted compute integration
+- **MPC Network** - Multi-party computation
+- **Client-side encryption** - Zero-knowledge architecture
+- **32-byte commitments** - On-chain privacy
+
+### Frontend
+- **Next.js 14** - App Router architecture
+- **TypeScript** - Strict mode enabled
+- **Tailwind CSS** - Modern styling
+- **shadcn/ui** - Premium components
+- **Solana Wallet Adapter** - Multi-wallet support
+
+### Infrastructure
+- **Solana Devnet** - Live deployment
+- **Jupiter Aggregator** - DEX routing
+- **Helius RPC** - Optional enhanced performance
+- **Anchor IDL** - Type-safe client generation
 
 ---
 
