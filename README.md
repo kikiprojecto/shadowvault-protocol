@@ -19,15 +19,26 @@
 - **Frontend:** Production-ready Next.js application (run `npm run dev`)
 
 
-## 🎬 Demo Video
+## 🎬 Live Demo & Video
 
-> **[Demo Video Coming Soon]** - 60-second walkthrough of ShadowVault Protocol
+### **Interactive Demo**
+🔗 **[Try Live Demo](http://localhost:3000/demo)** - Run `npm run dev` and visit `/demo`
+
+**Experience:**
+- ✅ Real-time Arcium MPC simulation
+- ✅ Encrypted trade intent flow
+- ✅ Zero-knowledge proof generation
+- ✅ Multi-DEX routing visualization
+- ✅ Complete privacy demonstration
+
+### **Demo Video**
+> **[Demo Video Coming Soon]** - 60-second walkthrough
 
 **What's Included:**
 - Landing page showcase
+- Live demo walkthrough
 - Architecture explanation
-- Arcium integration overview
-- Live deployment proof
+- Arcium integration proof
 - Future roadmap
 
 ---
