@@ -124,11 +124,11 @@ export default function Page() {
               className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-8 sm:px-10 py-4 sm:py-6 min-h-[48px] text-base sm:text-lg font-semibold rounded-xl shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-500/70 hover:scale-105 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-500/50"
             >
               <Link 
-                href="/portfolio" 
+                href="/demo" 
                 className="flex items-center justify-center gap-2"
-                aria-label="Go to Dashboard"
+                aria-label="Live Arcium Demo"
               >
-                Go to Dashboard
+                🔐 Live Demo
                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </Link>
             </Button>
