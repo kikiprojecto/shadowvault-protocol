@@ -237,178 +237,126 @@ User → Encrypted Strategy → On-Chain Hash Commitment
 
 ## 🚀 Quick Start
 
-### Option 1: Solana Playground (Fastest - 5 minutes)
+### Prerequisites
+- Node.js 18+
+- Rust 1.75+
+- Solana CLI
+- Anchor 0.29.0
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/kikiprojecto/shadowvault-protocol
+cd shadowvault-protocol
+
+# Install frontend dependencies
+npm install
+
+# Install Anchor dependencies (optional - for building smart contract)
+anchor build
+
+# Configure environment
+cp .env.example .env.local
+# Add your Program ID: HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+# Open http://localhost:3000
+```
+
+### Test Smart Contracts
+
+```bash
+anchor test
+```
+
+---
+
+## 🎮 Alternative: Solana Playground (No Installation Required)
+
+**Fastest way to try the smart contract (5 minutes):**
 
 1. **Open Solana Playground**: https://beta.solpg.io
 2. **Create New Project**: Select "Anchor (Rust)"
-3. **Copy Code**: Open `SOLANA_PLAYGROUND_lib.rs` in this repo
+3. **Copy Code**: Open `SOLANA_PLAYGROUND_FIXED.rs` in this repo
 4. **Paste**: Replace all content in Playground's `src/lib.rs`
 5. **Build**: Click 🔨 Build button
 6. **Deploy**: Click Deploy (ensure wallet has devnet SOL)
 7. **Done**: Your vault is live! ✅
 
-### Option 2: Local Development
-
-#### Prerequisites
-```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install Solana CLI
-sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
-
-# Install Anchor
-cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
-avm install 0.29.0
-avm use 0.29.0
-```
-
-#### Build and Deploy
-```bash
-# Clone repository
-git clone <your-repo>
-cd shadowvault-protocol
-
-# Install dependencies
-npm install
-
-# Build program
-anchor build
-
-# Get program ID
-anchor keys list
-
-# Update declare_id! in lib.rs with your program ID
-
-# Deploy to devnet
-anchor deploy --provider.cluster devnet
-
-# Run tests
-anchor test
-```
-
-#### Run Web App
-```bash
-# Start development server
-npm run dev
-
-# Open browser
-# Navigate to http://localhost:3000
-```
-
 ---
 
-## 📁 Project Structure
+## 📦 Project Structure
 
 ```
 shadowvault-protocol/
-├── programs/shadowvault/src/
-│   ├── lib.rs                      # Main program entry
-│   ├── state.rs                    # State account definitions
-│   ├── errors.rs                   # Custom error codes
-│   └── instructions/
-│       ├── initialize.rs           # Initialize vault
-│       ├── deposit.rs              # Deposit tokens
-│       ├── submit_trade_intent.rs  # Submit trade intent
-│       ├── execute_trade.rs        # Execute trade
-│       ├── withdraw.rs             # Withdraw tokens
-│       └── pause_vault.rs          # Pause/unpause
-├── tests/
-│   └── shadowvault.test.ts         # Comprehensive test suite
-├── app/                            # Next.js frontend (if applicable)
-├── SOLANA_PLAYGROUND_lib.rs        # Standalone file for Playground
-├── DEPLOYMENT_GUIDE.md             # Detailed deployment instructions
-├── IMPLEMENTATION_SUMMARY.md       # Complete implementation details
-├── ARCHITECTURE.md                 # Architecture documentation
-├── QUICK_REFERENCE.md              # Quick reference card
-└── README.md                       # This file
-```
-
----
-
-## 🧪 Testing
-
-### Run All Tests
-```bash
-anchor test
-```
-
-### Test Coverage
-- ✅ Vault initialization
-- ✅ Token deposits with TVL tracking
-- ✅ Trade intent submission
-- ✅ Trade execution with counter updates
-- ✅ Token withdrawals (owner only)
-- ✅ Pause/unpause functionality
-- ✅ Security validations (unauthorized access, zero amounts, etc.)
-- ✅ Event emissions
-- ✅ PDA derivation
-- ✅ Overflow protection
-
-### Sample Test Output
-```
-  ShadowVault Protocol Tests
-    1. Initialize Vault
-      ✓ Should initialize a new vault with encrypted strategy (234ms)
-      ✓ Should fail to initialize vault twice (89ms)
-    2. Deposit Tokens
-      ✓ Should deposit tokens into vault (312ms)
-      ✓ Should fail to deposit zero amount (45ms)
-    3. Submit Trade Intent
-      ✓ Should submit a trade intent (198ms)
-    4. Execute Trade
-      ✓ Should execute a trade (267ms)
-    5. Withdraw Tokens
-      ✓ Should withdraw tokens from vault (owner only) (223ms)
-      ✓ Should fail to withdraw as non-owner (67ms)
-    6. Pause Vault
-      ✓ Should pause the vault (owner only) (156ms)
-      ✓ Should fail to deposit when paused (78ms)
-      ✓ Should unpause the vault (134ms)
-
-  ✅ All tests completed successfully!
+├── programs/shadowvault/        # Anchor smart contract
+│   ├── src/
+│   │   ├── lib.rs              # Main program
+│   │   ├── state.rs            # Account structures
+│   │   └── instructions/       # 6 core instructions
+│   └── Cargo.toml
+├── app/                         # Next.js frontend
+│   ├── page.tsx                # Landing page
+│   ├── portfolio/              # Dashboard
+│   ├── idl/                    # Program IDL
+│   └── globals.css             # Animations
+├── lib/                         # Integration layers
+│   ├── solana/                 # Blockchain interaction
+│   └── arcium/                 # MPC integration
+├── tests/                       # Test suite
+└── docs/                        # Documentation & screenshots
 ```
 
 ---
 
 ## 📚 Documentation
 
-| Document | Description |
-|----------|-------------|
-| **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** | Quick reference card for instant deployment |
-| **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** | Comprehensive deployment instructions |
-| **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** | Complete implementation details |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)** | Architecture diagrams and flows |
-| **[SOLANA_PLAYGROUND_lib.rs](SOLANA_PLAYGROUND_lib.rs)** | Standalone file for Solana Playground |
+- **[HACKATHON_SUBMISSION.md](./HACKATHON_SUBMISSION.md)** - Comprehensive project documentation
+- **[DEMO_SCRIPT.md](./DEMO_SCRIPT.md)** - Demo video script
+- **[HOW_TO_RUN_IN_PLAYGROUND.md](./HOW_TO_RUN_IN_PLAYGROUND.md)** - Solana Playground guide
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Technical architecture details
 
 ---
 
-## 🔐 Security
+## 🧪 Testing
 
-### Implemented Security Features
+```bash
+# Run all tests
+anchor test
 
-1. **Access Control**
-   - Owner-only withdraw and pause operations
-   - `require_keys_eq!` macros for verification
-   - `has_one = owner` constraints
+# Run specific test
+anchor test -- --test initialize_vault
+```
 
-2. **Reentrancy Protection**
-   - Anchor's account validation
-   - State updates after external calls
-   - No recursive CPI calls
+---
 
-3. **Overflow Protection**
-   - `checked_add()` for increases
-   - `checked_sub()` for decreases
-   - Returns `MathOverflow` error
+## 🔗 Links
 
-4. **PDA Security**
-   - Deterministic derivation
-   - Bump seeds stored and verified
-   - Secure token custody
+- **Live Contract**: [Solana Explorer](https://explorer.solana.com/address/HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe?cluster=devnet)
+- **Arcium**: [arcium.com](https://arcium.com)
+- **Solana**: [solana.com](https://solana.com)
 
-5. **Emergency Controls**
-   - Pause mechanism blocks deposits/trades
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](./LICENSE) for details
+
+---
+
+## 🏆 Built for Arcium's <encrypted> Side Track | Cypherpunk Hackathon
+
+**Team**: kikiprojecto  
+**Contact**: [GitHub](https://github.com/kikiprojecto)
+
+---
+
+**⭐ Star this repo if you find it useful!**
    - Owner withdrawals remain available
    - Quick response to incidents
 
