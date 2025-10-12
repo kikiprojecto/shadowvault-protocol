@@ -19,6 +19,19 @@
 - **Frontend:** Production-ready Next.js application (run `npm run dev`)
 
 
+## 🎬 Demo Video
+
+> **[Demo Video Coming Soon]** - 60-second walkthrough of ShadowVault Protocol
+
+**What's Included:**
+- Landing page showcase
+- Architecture explanation
+- Arcium integration overview
+- Live deployment proof
+- Future roadmap
+
+---
+
 ## 📸 Screenshots
 
 ### Landing Page
@@ -49,6 +62,23 @@ ShadowVault uses **Arcium's encrypted compute** to enable:
 - 🛡️ **Zero leakage** - Complete information protection
 
 This solves the $100B+ institutional DeFi adoption problem by preventing MEV extraction, front-running, and strategy leaks while maintaining Solana's speed and low costs.
+
+### Competitive Advantages
+
+**vs. Traditional DEX Aggregators:**
+- ✅ Privacy-preserving (they expose all trade data)
+- ✅ MEV protection (they're vulnerable to front-running)
+- ✅ Strategy confidentiality (they leak trading patterns)
+
+**vs. Dark Pools:**
+- ✅ Decentralized (they're centralized)
+- ✅ Transparent settlement (they lack auditability)
+- ✅ Lower fees (they charge premium)
+
+**vs. Other Privacy Solutions:**
+- ✅ Solana speed (others are slow)
+- ✅ Arcium MPC (others use less secure methods)
+- ✅ Production-ready architecture (others are theoretical)
 
 ---
 
@@ -326,10 +356,15 @@ shadowvault-protocol/
 
 ## 📚 Documentation
 
-- **[HACKATHON_SUBMISSION.md](./HACKATHON_SUBMISSION.md)** - Comprehensive project documentation
-- **[DEMO_SCRIPT.md](./DEMO_SCRIPT.md)** - Demo video script
+### For Judges
+- **[DEMO_GUIDE.md](./DEMO_GUIDE.md)** - 5-minute evaluation guide for judges
+- **[ARCIUM_STATUS.md](./ARCIUM_STATUS.md)** - Honest integration status & roadmap
+- **[ROADMAP.md](./ROADMAP.md)** - Production roadmap & milestones
+
+### Technical Documentation
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Complete system architecture
+- **[docs/ARCIUM_INTEGRATION.md](./docs/ARCIUM_INTEGRATION.md)** - Arcium MPC integration details
 - **[HOW_TO_RUN_IN_PLAYGROUND.md](./HOW_TO_RUN_IN_PLAYGROUND.md)** - Solana Playground guide
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Technical architecture details
 
 ---
 
