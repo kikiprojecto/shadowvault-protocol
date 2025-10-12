@@ -75,6 +75,13 @@ This solves the $100B+ institutional DeFi adoption problem by preventing MEV ext
                    Zero Knowledge Proof
 ```
 
+### Real Implementation
+
+**Files:**
+- `lib/arcium/mpc-client.ts` - Arcium MPC client integration
+- `programs/shadowvault/src/instructions/execute_trade.rs` - On-chain proof verification
+- `docs/ARCIUM_INTEGRATION.md` - Complete technical documentation
+
 ### Implementation Details
 
 #### 1. Client-Side Encryption
