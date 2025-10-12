@@ -256,8 +256,6 @@ git push -u origin main
 ### **Submit Here**
 👉 **Superteam Platform**: [submission-url]
 
----
-
 ## 🎉 **YOU'VE GOT THIS!**
 
 You've built an amazing project that:
