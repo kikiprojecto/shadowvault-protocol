@@ -17,7 +17,28 @@ A decentralized vault protocol enabling private trading strategies through encry
 
 ---
 
-## 🎯 Elevator Pitch
+## 🎯 Overview
+
+ShadowVault Protocol enables private trade execution on Solana using Arcium's MPC network.
+
+Users submit encrypted trade intents where size, slippage, and strategy remain hidden. Arcium's MPC network computes optimal routing across DEXs (Jupiter, Raydium, Orca) privately, then executes on-chain without revealing sensitive information.
+
+### **DEPLOYED CONTRACT**
+- **Program ID**: HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe
+- **Network**: Solana Devnet
+- **Status**: Live and Verified
+
+### **TECHNICAL STACK**
+- Anchor 0.29.0 (Solana smart contracts)
+- Arcium SDK (encrypted compute)
+- Next.js 14 (TypeScript frontend)
+- Full documentation included
+
+This solves the $100B+ institutional DeFi adoption problem by preventing MEV extraction, front-running, and strategy leaks while maintaining Solana's speed and low costs.
+
+---
+
+## 🎯 Key Features
 
 - **🔐 Private Strategies**: Trade strategies remain encrypted on-chain via 32-byte hash commitments
 - **🎯 Intent-Based Trading**: Users submit trade intents; execution routing is computed privately
