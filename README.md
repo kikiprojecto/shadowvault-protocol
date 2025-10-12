@@ -20,6 +20,18 @@
 
 ---
 
+## 📸 Screenshots
+
+### Landing Page
+![ShadowVault Landing Page](./docs/images/landing-page.png)
+*Production-ready Next.js frontend with elite DeFi UI*
+
+### Smart Contract on Solana Explorer
+![Solana Explorer](./docs/images/solana-explorer.png)
+*Deployed and verified on Solana Devnet - Program ID: HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe*
+
+---
+
 ## 🎯 Problem & Solution
 
 ### The Problem
