@@ -281,6 +281,61 @@ export default function Page() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="relative z-10 py-32 px-4 bg-black/20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-20">
+            <span className="bg-gradient-to-r from-purple-400 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+              How It Works
+            </span>
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connection Lines */}
+            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500/50 via-blue-500/50 to-green-500/50"></div>
+
+            {/* Step 1 */}
+            <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-purple-500/30 transition-all duration-300">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl border-4 border-[#0a0a0a]">
+                1
+              </div>
+              <div className="pt-8 text-center">
+                <h3 className="text-2xl font-bold text-white mb-4">Submit Intent</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  User submits encrypted trade intent. Size, slippage, and strategy remain hidden on-chain.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-blue-500/30 transition-all duration-300">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl border-4 border-[#0a0a0a]">
+                2
+              </div>
+              <div className="pt-8 text-center">
+                <h3 className="text-2xl font-bold text-white mb-4">MPC Compute</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Arcium MPC network computes optimal routing across Jupiter, Raydium, Orca privately.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-green-500/30 transition-all duration-300">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-xl border-4 border-[#0a0a0a]">
+                3
+              </div>
+              <div className="pt-8 text-center">
+                <h3 className="text-2xl font-bold text-white mb-4">Execute</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Smart contract verifies ZK proof and executes trade. Strategy never revealed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Deployment Info Section - OpenSea Polish */}
       <section className="relative z-10 py-32 px-4">
         <div className="max-w-4xl mx-auto">
@@ -380,6 +435,61 @@ export default function Page() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-6 h-6 text-purple-400" />
+                <span className="text-xl font-bold text-white">ShadowVault</span>
+              </div>
+              <p className="text-gray-400 text-sm">
+                Privacy-first institutional DeFi aggregator on Solana using Arcium's encrypted compute.
+              </p>
+            </div>
+
+            {/* Links */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Resources</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a href="https://github.com/kikiprojecto/shadowvault-protocol" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href="https://docs.arcium.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                    Arcium Docs
+                  </a>
+                </li>
+                <li>
+                  <a href="https://solana.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-purple-400 transition-colors text-sm">
+                    Solana
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Built For */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Built For</h3>
+              <p className="text-gray-400 text-sm mb-2">
+                Arcium's &lt;encrypted&gt; Side Track
+              </p>
+              <p className="text-gray-400 text-sm">
+                Cypherpunk Hackathon 2025
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-white/10 text-center text-gray-500 text-sm">
+            <p>© 2025 ShadowVault Protocol. Built with ❤️ for privacy.</p>
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }
