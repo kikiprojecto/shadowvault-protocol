@@ -1,0 +1,18 @@
+[features]
+seeds = true
+skip-lint = false
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "testnet"
+wallet = "~/.config/solana/id.json"
+
+[programs.testnet]
+shadowvault = "ShdwVlt1111111111111111111111111111111111111"
+
+[scripts]
+# Runs the Next.js tests which include Anchor integration via ts-mocha
+# Use: `anchor test` or `npm run test`
+test = "npm run test"
