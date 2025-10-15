@@ -1,0 +1,23 @@
+[package]
+name = "shadowvault_mxe"
+version = "0.1.0"
+description = "ShadowVault MPC-enabled private vault system on Solana"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "shadowvault_mxe"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.29.0"
+arcium-mpc-sdk = "0.1"
+encrypted-ixs = { path = "../../encrypted-ixs" }
+
+[dev-dependencies]
