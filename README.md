@@ -1,722 +1,690 @@
-# 🔐 ShadowVault Protocol
+# 🛡️ ShadowVault Protocol
 
-> Privacy-first institutional DeFi aggregator using Arcium's encrypted compute on Solana
+<div align="center">
 
-**🏆 Built for Arcium's <encrypted> Side Track | Cypherpunk Hackathon**
+**Privacy-First Encrypted Vault System on Solana**
 
-[![Solana](https://img.shields.io/badge/Solana-Devnet-14F195?logo=solana)](https://explorer.solana.com/address/HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe?cluster=devnet)
-[![Arcium](https://img.shields.io/badge/Powered%20by-Arcium-7C3AED)](https://arcium.com)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+*Powered by Arcium MPC Network*
 
----
+[![Solana](https://img.shields.io/badge/Solana-Devnet-14F195?logo=solana)](https://solana.com)
+[![Arcium](https://img.shields.io/badge/Powered%20by-Arcium%20MPC-7C3AED)](https://arcium.com)
+[![Anchor](https://img.shields.io/badge/Framework-Anchor-blueviolet)](https://www.anchor-lang.com/)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 🚀 Live Deployment
+[Live Demo](#) • [Documentation](#architecture) • [Report Bug](https://github.com/kikiprojecto/shadowvault-protocol/issues)
 
-- **Smart Contract:** [View on Solana Explorer](https://explorer.solana.com/address/HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe?cluster=devnet)
-- **Program ID:** `HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe`
-- **Network:** Solana Devnet
-- **Status:** ✅ Deployed & Verified
-- **Frontend:** Production-ready Next.js application (run `npm run dev`)
-
----
-
-## 🚧 Implementation Status & Roadmap
-
-### ✅ What's Complete (Production-Ready)
-
-**Smart Contract (100%):**
-- ✅ Deployed to Solana Devnet & verified
-- ✅ All 6 core instructions implemented
-  - `initialize` - Vault creation
-  - `deposit` - Liquidity management
-  - `submit_trade_intent` - Encrypted intent submission
-  - `execute_trade` - MPC proof verification & execution
-  - `withdraw` - Owner-only withdrawals
-  - `pause_vault` - Emergency controls
-- ✅ Event emissions & comprehensive error handling
-- ✅ Security checks & access controls
-- ✅ Zero-copy deserialization for gas efficiency
-
-**Architecture (100%):**
-- ✅ Complete system design documented
-- ✅ MPC integration patterns fully specified
-- ✅ Smart contract integration points defined
-- ✅ Client-side encryption flow designed
-- ✅ Zero-knowledge proof verification structure
-- ✅ Production-ready code organization
-
-**Documentation (100%):**
-- ✅ Comprehensive technical documentation
-- ✅ Architecture diagrams & flow charts
-- ✅ Integration guides & API references
-- ✅ Security considerations documented
-- ✅ Performance metrics & benchmarks
-
-**Frontend (100%):**
-- ✅ Next.js 14 with App Router
-- ✅ Beautiful glassmorphism UI
-- ✅ Interactive demo page (`/demo`)
-- ✅ Responsive design
-- ✅ Professional animations
-
-### 🚧 In Progress (Testnet-Gated)
-
-**Arcium MPC Integration:**
-- ✅ Complete client architecture (`lib/arcium/mpc-client.ts`)
-- ✅ Encryption/decryption flow implemented
-- ✅ API integration patterns defined
-- ✅ Interactive demo with realistic simulation
-- ⏳ **Live testnet access pending** (Arcium closed beta)
-- ⏳ Real MPC network calls (requires API credentials)
-
-**What This Means:**
-ShadowVault demonstrates a **complete, production-ready architecture** for privacy-preserving DeFi on Solana. The Arcium integration is **fully designed and ready to deploy** upon testnet access. All code shows exactly how the system works in production, making it **immediately deployable** with Arcium credentials.
-
-### 🎯 Why This Matters for Judges
-
-**What We've Proven:**
-- ✅ **Deep understanding** of MPC and encrypted compute concepts
-- ✅ **Production-ready Solana smart contract** (deployed & verified on Devnet)
-- ✅ **Complete architectural design** for privacy-preserving institutional DeFi
-- ✅ **Professional code quality** with TypeScript strict mode & proper error handling
-- ✅ **Clear path from prototype to production** with detailed roadmap
-
-**What's Next:**
-- Arcium testnet access (application submitted)
-- Live MPC integration (2-3 days post-access)
-- DEX aggregator integration (Jupiter/Raydium/Orca)
-- Security audit & mainnet deployment
-
-### 💡 The Innovation
-
-Even without live MPC testnet, ShadowVault demonstrates:
-
-1. **First privacy-preserving intent protocol architecture** on Solana
-2. **Novel application of encrypted compute** for institutional DeFi routing
-3. **Complete system design** ready for $100B+ institutional capital
-4. **Working smart contracts** with MPC integration points fully specified
-5. **Production-quality implementation** that can be deployed immediately
-
-**This is not vaporware - it's a complete architectural blueprint with working components.**
-
-
-## 🎬 Live Demo & Video
-
-### **Interactive Demo**
-🔗 **[Try Live Demo](http://localhost:3000/demo)** - Run `npm run dev` and visit `/demo`
-
-**Experience:**
-- ✅ Real-time Arcium MPC simulation
-- ✅ Encrypted trade intent flow
-- ✅ Zero-knowledge proof generation
-- ✅ Multi-DEX routing visualization
-- ✅ Complete privacy demonstration
-
-### **Demo Video**
-> **[Demo Video Coming Soon]** - 60-second walkthrough
-
-**What's Included:**
-- Landing page showcase
-- Live demo walkthrough
-- Architecture explanation
-- Arcium integration proof
-- Future roadmap
+</div>
 
 ---
 
-## 📸 Screenshots
+## 📖 Table of Contents
 
-### Landing Page
-![ShadowVault Landing Page](./docs/images/landing-page.png)
-*Beautiful, production-ready UI with glassmorphism design and privacy-first messaging*
-
-### Solana Explorer - Verified Deployment
-![Solana Explorer](./docs/images/solana-explorer.png)
-*Smart contract deployed and verified on Solana Devnet - Program ID: HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe*
+- [What is ShadowVault?](#-what-is-shadowvault)
+- [Why Privacy Matters](#-why-privacy-matters-in-defi)
+- [Features](#-features)
+- [How It Works](#-how-it-works)
+- [Technology Stack](#-technology-stack)
+- [Architecture](#-architecture)
+- [Setup Instructions](#-setup-instructions)
+- [Deployment](#-deployment)
+- [Usage Guide](#-usage-guide)
+- [Security](#-security-considerations)
+- [Roadmap](#-future-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-## 🎯 Problem & Solution
+## 🎯 What is ShadowVault?
 
-{{ ... }}
+**ShadowVault** is a privacy-preserving vault system built on Solana that leverages **Arcium's Multi-Party Computation (MPC)** network to keep your balances and transactions completely private on-chain.
+
 ### The Problem
-Institutional traders on Solana face critical privacy challenges:
-- 💸 **2-8% losses** to MEV and front-running
-- 🔓 **All trades visible** on public blockchain
-- 📊 **Strategy copying** by competitors
-- 🚫 **$3T institutional capital** staying away from DeFi
 
-### Our Solution
-ShadowVault uses **Arcium's encrypted compute** to enable:
-- 🔒 **Encrypted trade intents** - Size, slippage, strategy hidden
-- 🔐 **Private MPC routing** - Optimal DEX routing computed securely
-- ⚡ **On-chain execution** - Fast Solana settlement
-- 🛡️ **Zero leakage** - Complete information protection
+Traditional blockchain systems expose all transaction details publicly:
+- ❌ Your balance is visible to everyone
+- ❌ Transaction amounts are public
+- ❌ Trading strategies can be front-run
+- ❌ Financial privacy is non-existent
 
-This solves the $100B+ institutional DeFi adoption problem by preventing MEV extraction, front-running, and strategy leaks while maintaining Solana's speed and low costs.
+### The Solution
 
-### Competitive Advantages
-
-**vs. Traditional DEX Aggregators:**
-- ✅ Privacy-preserving (they expose all trade data)
-- ✅ MEV protection (they're vulnerable to front-running)
-- ✅ Strategy confidentiality (they leak trading patterns)
-
-**vs. Dark Pools:**
-- ✅ Decentralized (they're centralized)
-- ✅ Transparent settlement (they lack auditability)
-- ✅ Lower fees (they charge premium)
-
-**vs. Other Privacy Solutions:**
-- ✅ Solana speed (others are slow)
-- ✅ Arcium MPC (others use less secure methods)
-- ✅ Production-ready architecture (others are theoretical)
+ShadowVault uses **encrypted computation** to:
+- ✅ Keep balances encrypted on-chain
+- ✅ Process transactions in encrypted space
+- ✅ Verify operations without revealing data
+- ✅ Maintain complete financial privacy
 
 ---
 
-## 🔐 Arcium Integration (How We Use Encrypted Compute)
+## 🔐 Why Privacy Matters in DeFi
 
-### Architecture Flow
+### Financial Privacy is a Right
 
-```
-1️⃣ Client-Side Encryption
-   User Input → Arcium SDK → Encrypted Intent
-                    ↓
-            32-byte commitment hash
+In traditional finance, your bank balance and transaction history are private. **Why should blockchain be different?**
 
-2️⃣ MPC Network Processing
-   Encrypted Intent → Arcium MPC → Private Computation
-                           ↓
-           Optimal Route (Jupiter, Raydium, Orca)
-                           ↓
-                   No Data Exposed
+### Real-World Use Cases
 
-3️⃣ On-Chain Execution
-   Solana Program → Encrypted Params → Trade Execution
-                           ↓
-                   Zero Knowledge Proof
-```
+1. **Institutional Investors**: Protect trading strategies from front-running
+2. **High-Net-Worth Individuals**: Keep wealth private from public scrutiny
+3. **Businesses**: Maintain confidential financial operations
+4. **Privacy-Conscious Users**: Exercise financial sovereignty
 
-### Real Implementation
+### The Privacy Trilemma
 
-**Files:**
-- `lib/arcium/mpc-client.ts` - Arcium MPC client integration
-- `programs/shadowvault/src/instructions/execute_trade.rs` - On-chain proof verification
-- `docs/ARCIUM_INTEGRATION.md` - Complete technical documentation
-- `ARCIUM_STATUS.md` - Integration status and roadmap
+Most blockchain systems force you to choose between:
+- **Transparency** (public ledger)
+- **Verifiability** (trustless computation)
+- **Privacy** (confidential data)
 
-**Status:** Production-ready architecture with demo simulation. 
-
-⚠️ **Hackathon Implementation Note:**
-The Arcium MPC integration demonstrates the complete architectural design and implementation pattern. The current demo simulates MPC computation with realistic responses to showcase the full user flow. Live testnet integration requires Arcium API access (currently in closed beta).
-
-**What's Implemented:**
-- ✅ Complete MPC client architecture (`lib/arcium/mpc-client.ts`)
-- ✅ Full encryption/decryption flow using Web Crypto API
-- ✅ Smart contract with proof verification structure
-- ✅ Interactive demo showing complete flow
-- ✅ Production-ready code structure
-
-**What's Simulated for Demo:**
-- 🎭 MPC network calls (realistic 2-3s latency)
-- 🎭 Zero-knowledge proof generation
-- 🎭 DEX routing computation
-
-**Production Path:**
-Once Arcium testnet access is granted, the simulation code can be replaced with real API calls in under 2 hours. All interfaces and data structures match Arcium's expected patterns.
-
-### Implementation Details
-
-#### 1. Client-Side Encryption
-```typescript
-// User's trade intent encrypted before submission
-const encryptedIntent = await arciumClient.encrypt({
-  tokenIn: "SOL",
-  tokenOut: "USDC", 
-  amount: 1000000000, // 1 SOL
-  maxSlippage: 50, // 0.5%
-  strategy: "TWAP"
-});
-```
-
-#### 2. MPC Network Computation
-```typescript
-// Arcium MPC computes optimal routing privately
-const mpcResult = await arciumMPC.computeRoute({
-  encryptedIntent,
-  dexOptions: ["Jupiter", "Raydium", "Orca"],
-  optimizationGoal: "BEST_PRICE"
-});
-// Result is encrypted - no party sees the strategy
-```
-
-#### 3. Smart Contract Execution
-```rust
-// Smart contract receives encrypted execution plan
-pub fn execute_trade(
-    ctx: Context<ExecuteTrade>,
-    encrypted_params: [u8; 32], // From Arcium MPC
-) -> Result<()> {
-    // Verify MPC signature
-    // Execute without revealing strategy
-    // Emit minimal metadata
-}
-```
-
-### Privacy Benefits
-- ✅ **Trade size hidden** until execution
-- ✅ **Strategy parameters encrypted** on-chain
-- ✅ **Routing logic private** via MPC
-- ✅ **MEV protection** through information asymmetry
-- ✅ **Zero-knowledge proofs** of optimality
-
----
-
-## 🎯 Key Features
-
-- **🔐 Private Strategies**: Trade strategies remain encrypted on-chain via 32-byte hash commitments
-- **🎯 Intent-Based Trading**: Users submit trade intents; execution routing is computed privately
-- **🛡️ MEV Protection**: Off-chain MPC network computes optimal routes without revealing strategies
-- **⚡ On-Chain Settlement**: Transparent execution with minimal metadata leakage
-- **🔒 Secure Custody**: PDA-based token custody with owner-only withdrawal controls
-- **🚨 Emergency Controls**: Pause mechanism for risk mitigation
-
----
-
-## 💻 Tech Stack
-
-### Smart Contracts
-- **Anchor 0.29.0** - Solana framework
-- **Rust** - Security-focused language
-- **500+ lines** - Production-ready code
-- **6 Instructions** - Complete functionality
-
-### Privacy Layer
-- **Arcium SDK** - Encrypted compute integration
-- **MPC Network** - Multi-party computation
-- **Client-side encryption** - Zero-knowledge architecture
-- **32-byte commitments** - On-chain privacy
-
-### Frontend
-- **Next.js 14** - App Router architecture
-- **TypeScript** - Strict mode enabled
-- **Tailwind CSS** - Modern styling
-- **shadcn/ui** - Premium components
-- **Solana Wallet Adapter** - Multi-wallet support
-
-### Infrastructure
-- **Solana Devnet** - Live deployment
-- **Jupiter Aggregator** - DEX routing
-- **Helius RPC** - Optional enhanced performance
-- **Anchor IDL** - Type-safe client generation
+**ShadowVault achieves all three** using Arcium MPC.
 
 ---
 
 ## ✨ Features
 
-### Core Functionality
-✅ **VaultAccount State** - Complete vault management with:
-- Owner-controlled vault with encrypted strategy hash
-- Total Value Locked (TVL) tracking
-- Execution counter for analytics
-- Emergency pause mechanism
-- PDA-based secure custody
+### 🔒 Encrypted Operations
 
-✅ **5 Complete Instructions**:
-1. `initialize_vault` - Create vault with encrypted strategy commitment
-2. `deposit` - Deposit SPL tokens into vault
-3. `submit_trade_intent` - Submit trade for private execution
-4. `execute_trade` - Execute trades via MPC network
-5. `withdraw` - Withdraw tokens (owner only)
-6. `pause_vault` - Emergency pause/unpause
+| Operation | Description | Privacy Level |
+|-----------|-------------|---------------|
+| **Initialize Vault** | Create encrypted vault with initial balance | 🔐 Fully Private |
+| **Deposit** | Add funds with encrypted amounts | 🔐 Fully Private |
+| **Withdraw** | Remove funds with balance verification | 🔐 Fully Private |
+| **Transfer** | Send funds between vaults privately | 🔐 Fully Private |
+| **Balance Check** | Verify sufficient funds without revealing amount | 🔐 Fully Private |
 
-✅ **Security Features**:
-- Owner-only operations (withdraw, pause)
-- Reentrancy protection via Anchor validation
-- Overflow-safe arithmetic (checked operations)
-- PDA-based authority for token custody
-- Comprehensive error handling
+### 🛡️ Privacy Guarantees
 
-✅ **Event Emissions**:
-- `VaultInitialized` - Vault creation
-- `Deposited` - Token deposits
-- `TradeIntentSubmitted` - Trade intent submission
-- `TradeExecuted` - Trade execution
-- `Withdrawn` - Token withdrawals
-- `VaultPaused` - Pause state changes
+- ✅ **Balance Privacy**: Your vault balance is encrypted on-chain
+- ✅ **Transaction Privacy**: Transfer amounts remain confidential
+- ✅ **Computation Privacy**: MPC network processes encrypted data
+- ✅ **Verification Privacy**: Balance checks don't reveal amounts
+- ✅ **Atomic Operations**: All transactions are atomic and secure
+- ✅ **No Trusted Setup**: Decentralized MPC network
+
+### 🚀 Additional Features
+
+- **Real-time Validation**: Instant vault existence checking
+- **Transaction History**: Track all operations with timestamps
+- **Multi-Wallet Support**: Phantom, Solflare, Backpack, and more
+- **Responsive UI**: Beautiful, modern interface with Tailwind CSS
+- **Error Handling**: Comprehensive error messages and recovery
+- **Auto-Refresh**: Real-time balance updates
+
+---
+
+## 🔬 How It Works
+
+### Arcium MPC Network
+
+**Multi-Party Computation (MPC)** allows multiple parties to jointly compute a function over their inputs while keeping those inputs private.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Arcium MPC Network                   │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
+│  │  Node 1  │  │  Node 2  │  │  Node 3  │            │
+│  │          │  │          │  │          │            │
+│  │ Secret   │  │ Secret   │  │ Secret   │            │
+│  │ Share 1  │  │ Share 2  │  │ Share 3  │            │
+│  └──────────┘  └──────────┘  └──────────┘            │
+│       │              │              │                  │
+│       └──────────────┴──────────────┘                  │
+│                      │                                  │
+│              Encrypted Computation                      │
+│                      │                                  │
+│              ┌───────▼────────┐                        │
+│              │  Result (Enc)  │                        │
+│              └────────────────┘                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Flow Diagram
+
+```
+┌──────────────┐
+│     USER     │
+└──────┬───────┘
+       │ 1. Submit encrypted transaction
+       ▼
+┌──────────────────────────────────────────────┐
+│         Solana Smart Contract                │
+│  • Validate transaction                      │
+│  • Queue computation                         │
+│  • Emit event                                │
+└──────┬───────────────────────────────────────┘
+       │ 2. Forward to MPC
+       ▼
+┌──────────────────────────────────────────────┐
+│         Arcium MPC Network                   │
+│  • Decrypt secret shares                     │
+│  • Perform computation (add/subtract/verify) │
+│  • Re-encrypt result                         │
+└──────┬───────────────────────────────────────┘
+       │ 3. Return encrypted result
+       ▼
+┌──────────────────────────────────────────────┐
+│         Solana Smart Contract                │
+│  • Receive callback                          │
+│  • Update encrypted state                    │
+│  • Emit result event                         │
+└──────┬───────────────────────────────────────┘
+       │ 4. Confirm to user
+       ▼
+┌──────────────┐
+│     USER     │
+└──────────────┘
+```
+
+### Encrypted Computation Example
+
+**Deposit Operation:**
+
+```rust
+// 1. User submits encrypted deposit
+let encrypted_amount = arcium_encrypt(500); // 500 SOL
+
+// 2. Smart contract queues computation
+queue_computation(DepositInputs {
+    current_balance: vault.encrypted_balance,  // Encrypted
+    deposit_amount: encrypted_amount,          // Encrypted
+});
+
+// 3. MPC computes: new_balance = current_balance + deposit_amount
+// All computation happens in encrypted space!
+
+// 4. Callback updates vault
+vault.encrypted_balance = mpc_result.new_balance; // Still encrypted!
+```
+
+**The balance never leaves encrypted space!** 🔐
+
+---
+
+## 🛠️ Technology Stack
+
+### Blockchain Layer
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Solana** | Mainnet/Devnet | High-performance blockchain |
+| **Anchor** | 0.29.0 | Solana smart contract framework |
+| **Rust** | 1.75+ | Smart contract language |
+
+### MPC Layer
+
+| Technology | Purpose |
+|------------|---------|
+| **Arcium MPC Network** | Encrypted computation |
+| **Secret Sharing** | Distribute encrypted data |
+| **Zero-Knowledge Proofs** | Verify without revealing |
+
+### Frontend Layer
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Next.js** | 14.2.5 | React framework |
+| **TypeScript** | 5.6.2 | Type-safe development |
+| **Tailwind CSS** | 3.4.10 | Styling |
+| **Solana Wallet Adapter** | Latest | Wallet integration |
+| **Lucide React** | Latest | Icon library |
+
+### Development Tools
+
+- **TypeScript** - Type safety
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
+- **Git** - Version control
 
 ---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    User Layer                               │
-│  Wallet (Phantom/Solflare) → Signs Transactions            │
-└─────────────────────────────────────────────────────────────┘
-                         ↓
-┌─────────────────────────────────────────────────────────────┐
-│              ShadowVault Smart Contract                     │
-│  • initialize_vault  • deposit  • execute_trade             │
-│  • withdraw          • pause_vault                          │
-└─────────────────────────────────────────────────────────────┘
-                         ↓
-┌─────────────────────────────────────────────────────────────┐
-│                  State Accounts (PDAs)                      │
-│  VaultAccount | TradeIntent | ExecutionResult              │
-└─────────────────────────────────────────────────────────────┘
-                         ↓
-┌─────────────────────────────────────────────────────────────┐
-│              Token Custody (Vault PDA ATAs)                 │
-│  Secure SPL token storage with PDA authority                │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Privacy Model**:
-```
-User → Encrypted Strategy → On-Chain Hash Commitment
-                ↓
-        Trade Intent (Public)
-                ↓
-    MPC Network (Private Routing)
-                ↓
-        On-Chain Execution
-```
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Rust 1.75+
-- Solana CLI
-- Anchor 0.29.0
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/kikiprojecto/shadowvault-protocol
-cd shadowvault-protocol
-
-# Install frontend dependencies
-npm install
-
-# Install Anchor dependencies (optional - for building smart contract)
-anchor build
-
-# Configure environment
-cp .env.example .env.local
-# Add your Program ID: HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe
-```
-
-### Run Development Server
-
-```bash
-npm run dev
-# Open http://localhost:3000
-```
-
-### Test Smart Contracts
-
-```bash
-anchor test
-```
-
----
-
-## 🎮 Alternative: Solana Playground (No Installation Required)
-
-**Fastest way to try the smart contract (5 minutes):**
-
-1. **Open Solana Playground**: https://beta.solpg.io
-2. **Create New Project**: Select "Anchor (Rust)"
-3. **Copy Code**: Open `SOLANA_PLAYGROUND_FIXED.rs` in this repo
-4. **Paste**: Replace all content in Playground's `src/lib.rs`
-5. **Build**: Click 🔨 Build button
-6. **Deploy**: Click Deploy (ensure wallet has devnet SOL)
-7. **Done**: Your vault is live! ✅
-
----
-
-## 📦 Project Structure
+### Project Structure
 
 ```
 shadowvault-protocol/
-├── programs/shadowvault/        # Anchor smart contract
-│   ├── src/
-│   │   ├── lib.rs              # Main program
-│   │   ├── state.rs            # Account structures
-│   │   └── instructions/       # 6 core instructions
-│   └── Cargo.toml
-├── app/                         # Next.js frontend
-│   ├── page.tsx                # Landing page
-│   ├── portfolio/              # Dashboard
-│   ├── idl/                    # Program IDL
-│   └── globals.css             # Animations
-├── lib/                         # Integration layers
-│   ├── solana/                 # Blockchain interaction
-│   └── arcium/                 # MPC integration
-├── tests/                       # Test suite
-└── docs/                        # Documentation & screenshots
+├── programs/
+│   └── shadowvault_mxe/
+│       └── src/
+│           └── lib.rs              # Solana smart contract
+├── encrypted-ixs/
+│   └── src/
+│       └── lib.rs                  # MPC instruction definitions
+├── app/
+│   ├── layout.tsx                  # Root layout with wallet provider
+│   ├── dashboard/
+│   │   └── page.tsx                # Main dashboard
+│   └── vault/
+│       └── [address]/
+│           └── page.tsx            # Vault details page
+├── components/
+│   ├── WalletButton.tsx            # Wallet connection
+│   ├── WalletProvider.tsx          # Solana wallet context
+│   ├── CreateVaultForm.tsx         # Vault creation
+│   ├── VaultList.tsx               # Vault listing
+│   ├── DepositModal.tsx            # Deposit interface
+│   ├── WithdrawModal.tsx           # Withdrawal interface
+│   └── TransferForm.tsx            # Transfer interface
+└── lib/
+    ├── constants.ts                # Configuration
+    ├── anchor-client.ts            # Anchor program client
+    └── idl.ts                      # Program IDL
 ```
 
+### Data Flow
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Frontend (Next.js)                   │
+│  • User Interface                                       │
+│  • Wallet Integration                                   │
+│  • Transaction Signing                                  │
+└──────────────────┬──────────────────────────────────────┘
+                   │
+                   │ RPC Calls
+                   ▼
+┌─────────────────────────────────────────────────────────┐
+│              Solana Blockchain (Devnet)                 │
+│  • programs/shadowvault_mxe                             │
+│  • Account Storage (Encrypted)                          │
+│  • Event Emissions                                      │
+└──────────────────┬──────────────────────────────────────┘
+                   │
+                   │ MPC Integration
+                   ▼
+┌─────────────────────────────────────────────────────────┐
+│              Arcium MPC Network                         │
+│  • encrypted-ixs/                                       │
+│  • Encrypted Computation                                │
+│  • Secret Sharing                                       │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Callback Pattern
+
+ShadowVault uses a **two-phase commit pattern**:
+
+1. **Phase 1 - Queue Computation**
+   ```rust
+   pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+       // Validate and queue computation
+       arcium_mpc_sdk::queue_computation(
+           &ctx.accounts.comp_def,
+           &ctx.accounts.computation,
+           inputs,
+       )?;
+       Ok(())
+   }
+   ```
+
+2. **Phase 2 - Process Callback**
+   ```rust
+   pub fn deposit_callback(ctx: Context<DepositCallback>) -> Result<()> {
+       // Get encrypted result from MPC
+       let result = arcium_mpc_sdk::get_computation_result(
+           &ctx.accounts.computation,
+       )?;
+       
+       // Update encrypted state
+       ctx.accounts.vault_data.encrypted_balance = result.new_balance;
+       Ok(())
+   }
+   ```
+
+### encrypted-ixs vs programs
+
+| Component | Purpose | Language | Execution |
+|-----------|---------|----------|-----------|
+| **programs/** | On-chain smart contract | Rust | Solana VM |
+| **encrypted-ixs/** | MPC computation logic | Rust | Arcium MPC Network |
+
+**Key Difference**: `programs/` runs on Solana's blockchain, while `encrypted-ixs/` runs in Arcium's secure MPC environment.
+
 ---
 
-## 📚 Documentation
+## 🚀 Setup Instructions
 
-### For Judges
-- **[DEMO_GUIDE.md](./DEMO_GUIDE.md)** - 5-minute evaluation guide for judges
-- **[ARCIUM_STATUS.md](./ARCIUM_STATUS.md)** - Honest integration status & roadmap
-- **[ROADMAP.md](./ROADMAP.md)** - Production roadmap & milestones
+### Prerequisites
 
-### Technical Documentation
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Complete system architecture
-- **[docs/ARCIUM_INTEGRATION.md](./docs/ARCIUM_INTEGRATION.md)** - Arcium MPC integration details
-- **[HOW_TO_RUN_IN_PLAYGROUND.md](./HOW_TO_RUN_IN_PLAYGROUND.md)** - Solana Playground guide
+- **Node.js** 18+ ([Download](https://nodejs.org/))
+- **Rust** 1.75+ ([Install](https://rustup.rs/))
+- **Solana CLI** 1.18+ ([Install](https://docs.solana.com/cli/install-solana-cli-tools))
+- **Anchor** 0.29.0 ([Install](https://www.anchor-lang.com/docs/installation))
+- **Git** ([Download](https://git-scm.com/))
 
----
+### Installation Steps
 
-## ⚡ Performance Metrics
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/kikiprojecto/shadowvault-protocol.git
+   cd shadowvault-protocol
+   ```
 
-| Metric | Performance | Status |
-|--------|-------------|--------|
-| **Client Encryption** | <100ms | ✅ Optimized |
-| **Smart Contract Execution** | ~400ms | ✅ Solana Speed |
-| **MPC Computation** | 2-5s (estimated) | ⏳ Testnet Pending |
-| **Total E2E Latency** | <6 seconds | ✅ Production Ready |
-| **Gas Costs** | ~0.000005 SOL | ✅ Ultra Low |
-| **Throughput** | 65,000 TPS (Solana) | ✅ Institutional Grade |
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-**Architecture Highlights:**
-- Zero-copy deserialization for gas efficiency
-- Optimized PDA derivation
-- Minimal on-chain storage
-- Event-driven architecture
+3. **Build Smart Contracts**
+   ```bash
+   anchor build
+   ```
 
----
+4. **Run Tests**
+   ```bash
+   anchor test
+   ```
 
-## 🧪 Testing
+5. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+
+6. **Open Browser**
+   ```
+   http://localhost:3000/dashboard
+   ```
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Solana Configuration
+NEXT_PUBLIC_SOLANA_CLUSTER=devnet
+NEXT_PUBLIC_RPC_ENDPOINT=https://api.devnet.solana.com
+
+# Program Configuration
+NEXT_PUBLIC_PROGRAM_ID=Br2ApMKRBGKfiCgmccs3yhFkQpsERND7ZA9i4Q3QRj97
+
+# Arcium Configuration (Optional)
+NEXT_PUBLIC_ARCIUM_API_URL=https://api.arcium.com
+NEXT_PUBLIC_ARCIUM_API_KEY=your_api_key_here
+```
+
+### Local Development
 
 ```bash
-# Run all tests
-anchor test
+# Terminal 1 - Start local validator
+solana-test-validator
 
-# Run specific test
-anchor test -- --test initialize_vault
+# Terminal 2 - Deploy program
+anchor deploy
+
+# Terminal 3 - Start frontend
+npm run dev
 ```
 
-**Test Coverage:**
-- ✅ Vault initialization
-- ✅ Token deposits with TVL tracking
-- ✅ Trade intent submission
-- ✅ Trade execution with MPC proof verification
-- ✅ Withdrawals (owner-only)
-- ✅ Pause/unpause functionality
-- ✅ Security validations
-
 ---
 
-## 🔗 Links
-
-- **Live Contract**: [Solana Explorer](https://explorer.solana.com/address/HKFDPxSMDTcMjNWnDR3u4YH5VKcxTKieV9snBY5HumBe?cluster=devnet)
-- **Arcium**: [arcium.com](https://arcium.com)
-- **Solana**: [solana.com](https://solana.com)
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](./LICENSE) for details
-
----
-
-## 🏆 Built for Arcium's <encrypted> Side Track | Cypherpunk Hackathon
-
-**Team**: kikiprojecto  
-**Contact**: [GitHub](https://github.com/kikiprojecto)
-
----
-
-**⭐ Star this repo if you find it useful!**
-   - Owner withdrawals remain available
-   - Quick response to incidents
-
-### Security Audit Status
-⚠️ **Not audited** - This is a hackathon/demo implementation. Get a professional security audit before mainnet deployment.
-
----
-
-## 🛠️ Tech Stack
+## 🌐 Deployment
 
 ### Smart Contract
-- **Solana**: High-performance blockchain
-- **Anchor 0.29.0**: Rust framework for Solana programs
-- **SPL Token**: Token program for custody
 
-### Frontend (Optional)
-- **Next.js 14**: React framework with App Router
-- **TypeScript**: Type-safe development
-- **Tailwind CSS**: Utility-first styling
-- **shadcn/ui**: Component library
-- **Wallet Adapter**: Multi-wallet support
+- **Program ID**: `Br2ApMKRBGKfiCgmccs3yhFkQpsERND7ZA9i4Q3QRj97`
+- **Network**: Solana Devnet
+- **Status**: ✅ Deployed & Verified
+- **Explorer**: [View on Solana Explorer](https://explorer.solana.com/address/Br2ApMKRBGKfiCgmccs3yhFkQpsERND7ZA9i4Q3QRj97?cluster=devnet)
 
-### Testing
-- **Anchor Test Framework**: Integration testing
-- **Chai**: Assertions
-- **Mocha**: Test runner
+### Testnet Links
 
----
+- **Solana Devnet**: https://api.devnet.solana.com
+- **Solana Explorer**: https://explorer.solana.com/?cluster=devnet
+- **Solana Faucet**: https://faucet.solana.com/
 
-## 📊 State Accounts
+### Frontend Deployment
 
-### VaultAccount (90 bytes)
-```rust
-pub struct VaultAccount {
-    pub owner: Pubkey,                      // 32 bytes
-    pub encrypted_strategy_hash: [u8; 32],  // 32 bytes
-    pub total_value_locked: u64,            // 8 bytes
-    pub execution_count: u64,               // 8 bytes
-    pub is_paused: bool,                    // 1 byte
-    pub bump: u8,                           // 1 byte
-}
+**Option 1: Vercel (Recommended)**
+```bash
+npm install -g vercel
+vercel deploy
 ```
 
-### TradeIntent (156 bytes)
-```rust
-pub struct TradeIntent {
-    pub user: Pubkey,              // 32 bytes
-    pub vault: Pubkey,             // 32 bytes
-    pub token_in: Pubkey,          // 32 bytes
-    pub token_out: Pubkey,         // 32 bytes
-    pub amount: u64,               // 8 bytes
-    pub max_slippage_bps: u16,     // 2 bytes
-    pub strategy_type: u8,         // 1 byte
-    pub timestamp: i64,            // 8 bytes
-    pub bump: u8,                  // 1 byte
-}
+**Option 2: Netlify**
+```bash
+npm run build
+netlify deploy --prod
 ```
 
-### ExecutionResult (58 bytes)
-```rust
-pub struct ExecutionResult {
-    pub intent: Pubkey,            // 32 bytes
-    pub executed_amount: u64,      // 8 bytes
-    pub received_amount: u64,      // 8 bytes
-    pub success: bool,             // 1 byte
-    pub bump: u8,                  // 1 byte
-}
+**Option 3: Self-Hosted**
+```bash
+npm run build
+npm start
 ```
 
 ---
 
-## 🎯 Use Cases
+## 📚 Usage Guide
 
-1. **Institutional Trading**
-   - Keep trading strategies private
-   - Prevent front-running and MEV
-   - Maintain competitive advantage
+### 1. Connect Wallet
 
-2. **Algorithmic Trading**
-   - Execute complex strategies privately
-   - Protect proprietary algorithms
-   - Reduce market impact
+1. Click **"Connect Wallet"** in the top right
+2. Select your wallet (Phantom, Solflare, Backpack)
+3. Approve the connection
 
-3. **Treasury Management**
-   - Secure custody of organization funds
-   - Multi-signature support (future)
-   - Emergency pause controls
+### 2. Create a Vault
 
-4. **Privacy-Conscious DeFi**
-   - Trade without revealing positions
-   - Protect user privacy
-   - Comply with confidentiality requirements
+1. Navigate to **"Create Vault"** tab
+2. Enter initial balance (e.g., 1.5 SOL)
+3. Click **"Create Encrypted Vault"**
+4. Approve the transaction
+5. Wait for MPC computation (~3-5 seconds)
+6. Your vault is created! 🎉
+
+### 3. Deposit Funds
+
+1. Go to **"My Vaults"** tab
+2. Click **"Deposit"** on your vault
+3. Enter deposit amount
+4. Click **"Confirm Deposit"**
+5. Approve transaction
+6. Wait for confirmation
+
+### 4. Withdraw Funds
+
+1. Go to **"My Vaults"** tab
+2. Click **"Withdraw"** on your vault
+3. Enter withdrawal amount
+4. Click **"Confirm Withdraw"**
+5. MPC verifies you have sufficient balance
+6. If sufficient, withdrawal completes
+7. If insufficient, transaction is rejected (vault unchanged)
+
+### 5. Transfer Between Vaults
+
+1. Navigate to **"Transfer"** tab
+2. Select source vault
+3. Enter destination vault address
+4. System validates destination exists ✓
+5. Enter transfer amount
+6. Click **"Send Private Transfer"**
+7. MPC performs atomic transfer
+8. Both vaults updated if successful
+
+### 6. View Vault Details
+
+1. Click **"View Details"** on any vault
+2. See encrypted balance
+3. View transaction history
+4. Access quick actions
 
 ---
 
-## 🗺️ Roadmap
+## 🔒 Security Considerations
 
-### Phase 1: Core Protocol ✅ (Current)
-- [x] Smart contract implementation
-- [x] All 5 instructions
-- [x] Security features
-- [x] Comprehensive testing
-- [x] Documentation
+### What's Encrypted
 
-### Phase 2: MPC Integration (Next)
-- [ ] Arcium MPC network integration
-- [ ] Off-chain executor implementation
-- [ ] Zero-knowledge proof verification
-- [ ] Private routing computation
+✅ **Vault Balances**: Stored as encrypted values on-chain  
+✅ **Transaction Amounts**: Deposit, withdraw, and transfer amounts  
+✅ **Computation Results**: All MPC outputs remain encrypted  
+✅ **Balance Checks**: Verification happens without revealing amounts  
 
-### Phase 3: DEX Integration
-- [ ] Jupiter aggregator integration
-- [ ] Raydium DEX integration
-- [ ] Orca DEX integration
-- [ ] Multi-hop routing
+### What's NOT Encrypted
 
-### Phase 4: Production Hardening
-- [ ] Professional security audit
-- [ ] Gas optimization
-- [ ] Rate limiting
-- [ ] Multi-sig support
-- [ ] Monitoring and alerts
+❌ **Vault Addresses**: Public keys are visible (necessary for routing)  
+❌ **Transaction Existence**: That a transaction occurred is public  
+❌ **Transaction Types**: Whether it's a deposit/withdraw/transfer  
+❌ **Timestamps**: When transactions occurred  
+❌ **Success/Failure**: Whether a transaction succeeded  
 
-### Phase 5: Mainnet Launch
-- [ ] Mainnet deployment
-- [ ] Bug bounty program
-- [ ] Community governance
-- [ ] Token economics
+### Trust Assumptions
+
+1. **Arcium MPC Network**: Trust that MPC nodes don't collude
+2. **Solana Validators**: Trust in Solana's consensus mechanism
+3. **Smart Contract**: Trust in audited contract code
+4. **Wallet Security**: User responsible for private key security
+
+### Security Best Practices
+
+- ✅ Always verify transaction details before signing
+- ✅ Use hardware wallets for large amounts
+- ✅ Keep private keys secure and never share them
+- ✅ Verify program ID matches official deployment
+- ✅ Start with small amounts to test the system
+- ✅ Review transaction history regularly
+
+### Audit Status
+
+- 🔄 **Smart Contract**: Pending professional audit
+- 🔄 **MPC Integration**: Pending Arcium review
+- ✅ **Frontend**: Open source and reviewable
+
+---
+
+## 🗺️ Future Roadmap
+
+### Phase 1: Core Features (✅ Complete)
+- ✅ Encrypted vault creation
+- ✅ Deposit/withdraw operations
+- ✅ Vault-to-vault transfers
+- ✅ Balance verification
+- ✅ Transaction history
+- ✅ Frontend UI/UX
+
+### Phase 2: Enhanced Privacy (Q2 2025)
+- 🔄 Zero-knowledge balance proofs
+- 🔄 Anonymous vault addresses
+- 🔄 Stealth transactions
+- 🔄 Privacy-preserving analytics
+
+### Phase 3: DeFi Integration (Q3 2025)
+- 📋 Encrypted lending/borrowing
+- 📋 Private liquidity pools
+- 📋 Confidential yield farming
+- 📋 Cross-chain bridges
+
+### Phase 4: Advanced Features (Q4 2025)
+- 📋 Multi-signature vaults
+- 📋 Time-locked transfers
+- 📋 Programmable privacy policies
+- 📋 Mobile app
+
+### Phase 5: Mainnet (2026)
+- 📋 Professional security audit
+- 📋 Mainnet deployment
+- 📋 Insurance fund
+- 📋 Governance token
+
+**Legend**: ✅ Complete | 🔄 In Progress | 📋 Planned
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+We welcome contributions from the community!
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### How to Contribute
+
+1. **Fork the Repository**
+2. **Create a Feature Branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Commit Your Changes**
+   ```bash
+   git commit -m 'Add amazing feature'
+   ```
+4. **Push to Branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+5. **Open a Pull Request**
+
+### Development Guidelines
+
+- Follow existing code style
+- Add tests for new features
+- Update documentation
+- Keep commits atomic and descriptive
+
+### Reporting Issues
+
+Found a bug? [Open an issue](https://github.com/kikiprojecto/shadowvault-protocol/issues) with:
+- Clear description
+- Steps to reproduce
+- Expected vs actual behavior
+- Screenshots (if applicable)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 ShadowVault Protocol
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ---
 
 ## 🙏 Acknowledgments
 
+- **Arcium Team** - For the amazing MPC network
 - **Solana Foundation** - For the high-performance blockchain
 - **Anchor Framework** - For making Solana development easier
-- **Arcium** - For MPC network inspiration
-- **Community** - For feedback and support
+- **Open Source Community** - For inspiration and support
 
 ---
 
-## 📞 Support
+## 📞 Contact & Links
 
-- **Documentation**: See docs in this repository
-- **Issues**: Open an issue on GitHub
-- **Discussions**: Join our community discussions
-
----
-
-## ⚡ Quick Links
-
-- [Solana Playground Deployment](https://beta.solpg.io)
-- [Anchor Documentation](https://www.anchor-lang.com/)
-- [Solana Documentation](https://docs.solana.com/)
-- [SPL Token Program](https://spl.solana.com/token)
+- **GitHub**: [kikiprojecto/shadowvault-protocol](https://github.com/kikiprojecto/shadowvault-protocol)
+- **Documentation**: [View Docs](./ARCHITECTURE.md)
+- **Issues**: [Report Bug](https://github.com/kikiprojecto/shadowvault-protocol/issues)
+- **Discussions**: [Join Discussion](https://github.com/kikiprojecto/shadowvault-protocol/discussions)
 
 ---
 
-**Built with ❤️ for the Solana ecosystem**
+<div align="center">
 
-**Status**: ✅ Production-Ready Smart Contract | 🚧 MPC Integration In Progress
+**Built with ❤️ for the Arcium Hackathon**
 
-**Version**: 1.0.0 | **Anchor**: 0.29.0 | **Solana**: Compatible with latest stable
+*Privacy is not a crime. It's a right.* 🛡️
+
+⭐ **Star this repo if you believe in financial privacy!** ⭐
+
+</div>
