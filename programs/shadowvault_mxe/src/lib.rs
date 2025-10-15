@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use arcium_mpc_sdk::{Enc, Shared};
 use encrypted_ixs::{
     AddTogetherInputs, AddTogetherOutputs, VaultInitInputs, VaultInitOutputs, VaultAccount,
-    DepositInputs, BalanceCheckInputs, BalanceCheckResult,
+    DepositInputs, BalanceCheckInputs, BalanceCheckResult, WithdrawInputs, WithdrawResult,
 };
 
 declare_id!("Br2ApMKRBGKfiCgmccs3yhFkQpsERND7ZA9i4Q3QRj97");
@@ -414,6 +414,156 @@ pub mod shadowvault_mxe {
         
         Ok(())
     }
+
+    // ============================================================================
+    // WITHDRAW OPERATION - ENCRYPTED WITHDRAWAL WITH VALIDATION
+    // ============================================================================
+
+    /// Initialize computation definition for withdraw
+    pub fn init_withdraw_comp_def(
+        ctx: Context<InitWithdrawCompDef>
+    ) -> Result<()> {
+        msg!("Initializing withdraw computation definition");
+        
+        // Initialize computation definition for encrypted withdrawal
+        arcium_mpc_sdk::init_comp_def::<(VaultAccount, WithdrawInputs), WithdrawResult>(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+        )?;
+        
+        msg!("Withdraw computation definition initialized");
+        Ok(())
+    }
+
+    /// Queue encrypted withdrawal computation
+    /// 
+    /// This function:
+    /// 1. Validates vault ownership and state
+    /// 2. Loads current encrypted vault state
+    /// 3. Creates encrypted withdrawal inputs
+    /// 4. Queues computation to Arcium MPC network
+    /// 5. MPC performs balance check and conditional withdrawal
+    pub fn withdraw(
+        ctx: Context<Withdraw>,
+        amount: u64,
+    ) -> Result<()> {
+        msg!("Processing withdrawal for vault: {}", ctx.accounts.vault_metadata.key());
+        msg!("Withdrawal amount (encrypted): {}", amount);
+        
+        // Validate vault is initialized
+        require!(
+            ctx.accounts.vault_metadata.initialized,
+            VaultError::VaultNotInitialized
+        );
+        
+        // Validate vault is active
+        require!(
+            ctx.accounts.vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
+        // Validate owner
+        require!(
+            ctx.accounts.owner.key() == ctx.accounts.vault_metadata.owner,
+            VaultError::UnauthorizedAccess
+        );
+        
+        // Validate no computation is already queued
+        require!(
+            !ctx.accounts.vault_metadata.computation_queued,
+            VaultError::ComputationQueued
+        );
+        
+        // Load current vault state for MPC computation
+        let current_vault = VaultAccount {
+            encrypted_balance: ctx.accounts.vault_data.encrypted_balance,
+            encrypted_total_deposits: ctx.accounts.vault_data.encrypted_total_deposits,
+            encrypted_total_withdrawals: ctx.accounts.vault_data.encrypted_total_withdrawals,
+            encrypted_tx_count: ctx.accounts.vault_data.encrypted_tx_count,
+            owner: ctx.accounts.vault_data.owner,
+            created_at: ctx.accounts.vault_data.created_at,
+            is_active: ctx.accounts.vault_data.is_active,
+        };
+        
+        // Create encrypted withdrawal inputs
+        let withdraw_inputs = WithdrawInputs {
+            amount,
+        };
+        
+        // Queue computation to Arcium MPC network
+        // The MPC will:
+        // 1. Check if balance >= amount (encrypted)
+        // 2. If sufficient: new_balance = balance - amount
+        // 3. If insufficient: balance unchanged
+        // 4. Return updated vault and success flag
+        arcium_mpc_sdk::queue_computation(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.computation,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+            (current_vault, withdraw_inputs),
+        )?;
+        
+        // Update metadata to track computation
+        let vault_metadata = &mut ctx.accounts.vault_metadata;
+        vault_metadata.computation_queued = true;
+        
+        msg!("Withdrawal computation queued successfully");
+        Ok(())
+    }
+
+    /// Handle callback from withdrawal computation
+    /// 
+    /// This function:
+    /// 1. Receives encrypted withdrawal result from MPC
+    /// 2. Updates vault if withdrawal was successful
+    /// 3. Emits event with encrypted result
+    /// 4. Handles failure case (insufficient balance)
+    pub fn withdraw_callback(
+        ctx: Context<WithdrawCallback>
+    ) -> Result<()> {
+        msg!("Processing withdraw callback");
+        
+        // Get encrypted result from MPC computation
+        let withdraw_result: WithdrawResult = arcium_mpc_sdk::get_computation_result(
+            &ctx.accounts.computation,
+        )?;
+        
+        // Get current timestamp
+        let clock = Clock::get()?;
+        let timestamp = clock.unix_timestamp;
+        
+        // Update vault data with new encrypted values
+        let vault_data = &mut ctx.accounts.vault_data;
+        
+        // Always update vault state (even on failure, values unchanged)
+        vault_data.encrypted_balance = withdraw_result.new_vault.encrypted_balance;
+        vault_data.encrypted_total_withdrawals = withdraw_result.new_vault.encrypted_total_withdrawals;
+        vault_data.encrypted_tx_count = withdraw_result.new_vault.encrypted_tx_count;
+        
+        // Update metadata
+        let vault_metadata = &mut ctx.accounts.vault_metadata;
+        vault_metadata.computation_queued = false;
+        
+        // Emit event with encrypted result
+        emit!(WithdrawEvent {
+            vault: ctx.accounts.vault_metadata.key(),
+            success: withdraw_result.success,
+            encrypted_new_balance: withdraw_result.new_vault.encrypted_balance,
+            timestamp,
+        });
+        
+        if withdraw_result.success {
+            msg!("Withdrawal completed successfully");
+            msg!("New encrypted balance stored");
+        } else {
+            msg!("Withdrawal failed: insufficient balance");
+            msg!("Vault state unchanged (balance insufficient)");
+        }
+        
+        Ok(())
+    }
 }
 
 // ============================================================================
@@ -742,6 +892,88 @@ impl VaultData {
 }
 
 // ============================================================================
+// ACCOUNT STRUCTS - WITHDRAW OPERATION
+// ============================================================================
+
+#[derive(Accounts)]
+pub struct InitWithdrawCompDef<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// CHECK: Computation definition account for withdraw
+    #[account(mut)]
+    pub comp_def: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Withdraw<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// The owner of the vault (must sign)
+    pub owner: Signer<'info>,
+    
+    /// CHECK: Computation definition account
+    pub comp_def: AccountInfo<'info>,
+    
+    /// CHECK: Computation account for this withdrawal
+    #[account(mut)]
+    pub computation: AccountInfo<'info>,
+    
+    /// Vault metadata PDA
+    #[account(
+        mut,
+        seeds = [b"vault_metadata", owner.key().as_ref()],
+        bump = vault_metadata.bump,
+        constraint = vault_metadata.owner == owner.key() @ VaultError::UnauthorizedAccess,
+        constraint = vault_metadata.initialized @ VaultError::VaultNotInitialized,
+        constraint = !vault_metadata.computation_queued @ VaultError::ComputationQueued
+    )]
+    pub vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Vault data account
+    #[account(
+        mut,
+        seeds = [b"vault_data", owner.key().as_ref()],
+        bump,
+        constraint = vault_data.owner == owner.key().to_bytes() @ VaultError::UnauthorizedAccess,
+        constraint = vault_data.is_active @ VaultError::VaultNotActive
+    )]
+    pub vault_data: Account<'info, VaultData>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawCallback<'info> {
+    /// CHECK: Computation account
+    pub computation: AccountInfo<'info>,
+    
+    /// Vault metadata PDA
+    #[account(
+        mut,
+        seeds = [b"vault_metadata", vault_metadata.owner.as_ref()],
+        bump = vault_metadata.bump
+    )]
+    pub vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Vault data account to update
+    #[account(
+        mut,
+        seeds = [b"vault_data", vault_metadata.owner.as_ref()],
+        bump
+    )]
+    pub vault_data: Account<'info, VaultData>,
+    
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+// ============================================================================
 // ERROR CODES
 // ============================================================================
 
@@ -780,5 +1012,21 @@ pub struct BalanceCheckEvent {
     pub encrypted_balance: u64,
     
     /// Timestamp of the check
+    pub timestamp: i64,
+}
+
+/// Event emitted when withdrawal is processed
+#[event]
+pub struct WithdrawEvent {
+    /// Vault public key
+    pub vault: Pubkey,
+    
+    /// Whether withdrawal was successful (balance was sufficient)
+    pub success: bool,
+    
+    /// New encrypted balance after withdrawal (or unchanged if failed)
+    pub encrypted_new_balance: u64,
+    
+    /// Timestamp of the withdrawal
     pub timestamp: i64,
 }
