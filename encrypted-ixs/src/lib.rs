@@ -201,6 +201,75 @@ pub fn check_balance_sufficient(
     result
 }
 
+/// Withdraw funds from an encrypted vault
+/// 
+/// This MPC instruction performs encrypted withdrawal with balance validation.
+/// The withdrawal only succeeds if balance >= withdraw_amount, and this check
+/// happens in encrypted space without revealing the balance.
+/// 
+/// # Arguments
+/// * `vault_data` - Current encrypted vault state
+/// * `withdraw_input` - Encrypted withdrawal amount
+/// 
+/// # Returns
+/// * WithdrawResult with updated vault and success flag
+#[instruction]
+pub fn withdraw(
+    vault_data: Enc<Shared, VaultAccount>,
+    withdraw_input: Enc<Shared, WithdrawInputs>
+) -> Enc<Shared, WithdrawResult> {
+    // Get current encrypted balance
+    let current_balance = vault_data.encrypted_balance;
+    
+    // Get encrypted withdraw amount
+    let withdraw_amount = withdraw_input.amount;
+    
+    // Check if balance is sufficient (encrypted comparison)
+    let is_sufficient = current_balance >= withdraw_amount;
+    
+    // Conditional encrypted arithmetic based on sufficiency check
+    // If sufficient: new_balance = balance - amount
+    // If insufficient: new_balance = balance (unchanged)
+    let new_balance = if is_sufficient {
+        current_balance - withdraw_amount
+    } else {
+        current_balance
+    };
+    
+    // Update total withdrawals only if successful
+    let new_total_withdrawals = if is_sufficient {
+        vault_data.encrypted_total_withdrawals + withdraw_amount
+    } else {
+        vault_data.encrypted_total_withdrawals
+    };
+    
+    // Increment transaction count only if successful
+    let new_tx_count = if is_sufficient {
+        vault_data.encrypted_tx_count + 1u64
+    } else {
+        vault_data.encrypted_tx_count
+    };
+    
+    // Create updated vault account
+    let updated_vault = VaultAccount {
+        encrypted_balance: new_balance,
+        encrypted_total_deposits: vault_data.encrypted_total_deposits,
+        encrypted_total_withdrawals: new_total_withdrawals,
+        encrypted_tx_count: new_tx_count,
+        owner: vault_data.owner,
+        created_at: vault_data.created_at,
+        is_active: vault_data.is_active,
+    };
+    
+    // Return result with updated vault and success flag
+    let result = WithdrawResult {
+        new_vault: updated_vault,
+        success: is_sufficient,
+    };
+    
+    result
+}
+
 /// Inputs for depositing funds into encrypted vault
 #[derive(Debug, Clone)]
 pub struct DepositInputs {
@@ -211,34 +280,19 @@ pub struct DepositInputs {
 /// Inputs for withdrawing funds from encrypted vault
 #[derive(Debug, Clone)]
 pub struct WithdrawInputs {
-    /// Current encrypted balance from vault
-    pub current_balance: Enc<Shared, u64>,
-    
     /// Encrypted amount to withdraw
-    pub withdraw_amount: Enc<Shared, u64>,
-    
-    /// Current encrypted total withdrawals
-    pub current_total_withdrawals: Enc<Shared, u64>,
-    
-    /// Current encrypted transaction count
-    pub current_tx_count: Enc<Shared, u64>,
+    pub amount: u64,
 }
 
-/// Outputs from withdraw operation
+/// Result from withdraw operation
 #[derive(Debug, Clone)]
-pub struct WithdrawOutputs {
-    /// New encrypted balance after withdrawal
-    pub new_balance: Enc<Shared, u64>,
-    
-    /// Updated encrypted total withdrawals
-    pub new_total_withdrawals: Enc<Shared, u64>,
-    
-    /// Updated encrypted transaction count
-    pub new_tx_count: Enc<Shared, u64>,
+pub struct WithdrawResult {
+    /// Updated vault account (with new balance if successful)
+    pub new_vault: VaultAccount,
     
     /// Encrypted flag indicating if withdrawal was successful
     /// (prevents revealing balance through failed withdrawals)
-    pub success: Enc<Shared, bool>,
+    pub success: bool,
 }
 
 /// Inputs for checking vault balance (encrypted query)
