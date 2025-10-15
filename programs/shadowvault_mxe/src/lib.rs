@@ -697,6 +697,68 @@ pub mod shadowvault_mxe {
         msg!("Transfer computation queued successfully");
         Ok(())
     }
+
+    /// Handle callback from transfer computation
+    /// 
+    /// This function:
+    /// 1. Receives encrypted transfer result from MPC
+    /// 2. Updates both vaults if transfer was successful
+    /// 3. Emits event with encrypted result
+    /// 4. Handles failure case (insufficient balance)
+    pub fn transfer_callback(
+        ctx: Context<TransferCallback>,
+        amount: u64,
+    ) -> Result<()> {
+        msg!("Processing transfer callback");
+        
+        // Get encrypted result from MPC computation
+        let transfer_result: TransferResult = arcium_mpc_sdk::get_computation_result(
+            &ctx.accounts.computation,
+        )?;
+        
+        // Get current timestamp
+        let clock = Clock::get()?;
+        let timestamp = clock.unix_timestamp;
+        
+        // Update vault data based on success status
+        if transfer_result.success {
+            // SUCCESS: Update both vaults with new encrypted balances
+            
+            // Update source vault
+            let from_vault_data = &mut ctx.accounts.from_vault_data;
+            from_vault_data.encrypted_balance = transfer_result.updated_from_vault.encrypted_balance;
+            from_vault_data.encrypted_total_withdrawals = transfer_result.updated_from_vault.encrypted_total_withdrawals;
+            from_vault_data.encrypted_tx_count = transfer_result.updated_from_vault.encrypted_tx_count;
+            
+            // Update destination vault
+            let to_vault_data = &mut ctx.accounts.to_vault_data;
+            to_vault_data.encrypted_balance = transfer_result.updated_to_vault.encrypted_balance;
+            to_vault_data.encrypted_total_deposits = transfer_result.updated_to_vault.encrypted_total_deposits;
+            to_vault_data.encrypted_tx_count = transfer_result.updated_to_vault.encrypted_tx_count;
+            
+            msg!("Transfer completed successfully");
+            msg!("Both vaults updated with new encrypted balances");
+        } else {
+            // FAILURE: Don't update anything (balances unchanged)
+            msg!("Transfer failed: insufficient balance in source vault");
+            msg!("Both vaults unchanged (balance insufficient)");
+        }
+        
+        // Update source vault metadata
+        let from_vault_metadata = &mut ctx.accounts.from_vault_metadata;
+        from_vault_metadata.computation_queued = false;
+        
+        // Emit event with encrypted result
+        emit!(TransferEvent {
+            from_vault: ctx.accounts.from_vault_metadata.key(),
+            to_vault: ctx.accounts.to_vault_metadata.key(),
+            encrypted_amount: amount,
+            success: transfer_result.success,
+            timestamp,
+        });
+        
+        Ok(())
+    }
 }
 
 // ============================================================================
@@ -1178,6 +1240,48 @@ pub struct Transfer<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct TransferCallback<'info> {
+    /// CHECK: Computation account
+    pub computation: AccountInfo<'info>,
+    
+    /// Source vault metadata PDA
+    #[account(
+        mut,
+        seeds = [b"vault_metadata", from_vault_metadata.owner.as_ref()],
+        bump = from_vault_metadata.bump
+    )]
+    pub from_vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Source vault data account to update
+    #[account(
+        mut,
+        seeds = [b"vault_data", from_vault_metadata.owner.as_ref()],
+        bump
+    )]
+    pub from_vault_data: Account<'info, VaultData>,
+    
+    /// Destination vault metadata PDA
+    #[account(
+        seeds = [b"vault_metadata", to_vault_metadata.owner.as_ref()],
+        bump = to_vault_metadata.bump
+    )]
+    pub to_vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Destination vault data account to update
+    #[account(
+        mut,
+        seeds = [b"vault_data", to_vault_metadata.owner.as_ref()],
+        bump
+    )]
+    pub to_vault_data: Account<'info, VaultData>,
+    
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
 // ============================================================================
 // ERROR CODES
 // ============================================================================
@@ -1233,5 +1337,24 @@ pub struct WithdrawEvent {
     pub encrypted_new_balance: u64,
     
     /// Timestamp of the withdrawal
+    pub timestamp: i64,
+}
+
+/// Event emitted when transfer is processed
+#[event]
+pub struct TransferEvent {
+    /// Source vault public key
+    pub from_vault: Pubkey,
+    
+    /// Destination vault public key
+    pub to_vault: Pubkey,
+    
+    /// Encrypted transfer amount
+    pub encrypted_amount: u64,
+    
+    /// Whether transfer was successful (source balance was sufficient)
+    pub success: bool,
+    
+    /// Timestamp of the transfer
     pub timestamp: i64,
 }
