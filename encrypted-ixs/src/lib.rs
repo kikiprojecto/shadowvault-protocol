@@ -166,6 +166,41 @@ pub fn deposit(
     updated_vault
 }
 
+/// Check if vault balance is sufficient for a required amount
+/// 
+/// This MPC instruction performs encrypted comparison: balance >= required_amount
+/// without revealing either the balance or the required amount.
+/// 
+/// # Arguments
+/// * `vault_data` - Current encrypted vault state
+/// * `check_input` - Required amount to check against
+/// 
+/// # Returns
+/// * BalanceCheckResult with encrypted is_sufficient flag and balance
+#[instruction]
+pub fn check_balance_sufficient(
+    vault_data: Enc<Shared, VaultAccount>,
+    check_input: Enc<Shared, BalanceCheckInputs>
+) -> Enc<Shared, BalanceCheckResult> {
+    // Get current encrypted balance from vault
+    let current_balance = vault_data.encrypted_balance;
+    
+    // Get required amount to check against
+    let required_amount = check_input.required_amount;
+    
+    // Perform encrypted comparison: balance >= required_amount
+    // This comparison happens in encrypted space without revealing values
+    let is_sufficient = current_balance >= required_amount;
+    
+    // Return result with encrypted flag and balance
+    let result = BalanceCheckResult {
+        is_sufficient,
+        balance: current_balance,
+    };
+    
+    result
+}
+
 /// Inputs for depositing funds into encrypted vault
 #[derive(Debug, Clone)]
 pub struct DepositInputs {
@@ -209,19 +244,19 @@ pub struct WithdrawOutputs {
 /// Inputs for checking vault balance (encrypted query)
 #[derive(Debug, Clone)]
 pub struct BalanceCheckInputs {
-    /// Current encrypted balance
-    pub encrypted_balance: Enc<Shared, u64>,
+    /// Required amount to check against
+    pub required_amount: u64,
 }
 
-/// Outputs from balance check
+/// Result from balance check (encrypted comparison)
 #[derive(Debug, Clone)]
-pub struct BalanceCheckOutputs {
-    /// Encrypted balance (stays encrypted)
-    pub encrypted_balance: Enc<Shared, u64>,
-    
-    /// Encrypted flag indicating if balance is above threshold
+pub struct BalanceCheckResult {
+    /// Encrypted flag indicating if balance >= required_amount
     /// (allows conditional logic without revealing exact balance)
-    pub is_sufficient: Enc<Shared, bool>,
+    pub is_sufficient: bool,
+    
+    /// Current encrypted balance (stays encrypted)
+    pub balance: u64,
 }
 
 /// Inputs for transferring between vaults (future feature)
