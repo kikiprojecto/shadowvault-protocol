@@ -121,33 +121,56 @@ pub fn initialize_vault(
     vault_outputs
 }
 
+/// Deposit funds into an encrypted vault
+/// 
+/// This MPC instruction adds an encrypted amount to the vault's encrypted balance.
+/// The balance remains encrypted throughout the computation, maintaining complete privacy.
+/// 
+/// # Arguments
+/// * `vault_data` - Current encrypted vault state
+/// * `deposit_input` - Encrypted deposit amount
+/// 
+/// # Returns
+/// * Updated VaultAccount with new encrypted balance
+#[instruction]
+pub fn deposit(
+    vault_data: Enc<Shared, VaultAccount>,
+    deposit_input: Enc<Shared, DepositInputs>
+) -> Enc<Shared, VaultAccount> {
+    // Get current encrypted balance from vault
+    let current_balance = vault_data.encrypted_balance;
+    
+    // Get encrypted deposit amount
+    let deposit_amount = deposit_input.amount;
+    
+    // Add them together (encrypted arithmetic)
+    let new_balance = current_balance + deposit_amount;
+    
+    // Update vault total deposits
+    let new_total_deposits = vault_data.encrypted_total_deposits + deposit_amount;
+    
+    // Increment transaction count
+    let new_tx_count = vault_data.encrypted_tx_count + 1u64;
+    
+    // Create updated vault account with new encrypted balance
+    let updated_vault = VaultAccount {
+        encrypted_balance: new_balance,
+        encrypted_total_deposits: new_total_deposits,
+        encrypted_total_withdrawals: vault_data.encrypted_total_withdrawals,
+        encrypted_tx_count: new_tx_count,
+        owner: vault_data.owner,
+        created_at: vault_data.created_at,
+        is_active: vault_data.is_active,
+    };
+    
+    updated_vault
+}
+
 /// Inputs for depositing funds into encrypted vault
 #[derive(Debug, Clone)]
 pub struct DepositInputs {
-    /// Current encrypted balance from vault
-    pub current_balance: Enc<Shared, u64>,
-    
     /// Encrypted amount to deposit
-    pub deposit_amount: Enc<Shared, u64>,
-    
-    /// Current encrypted total deposits
-    pub current_total_deposits: Enc<Shared, u64>,
-    
-    /// Current encrypted transaction count
-    pub current_tx_count: Enc<Shared, u64>,
-}
-
-/// Outputs from deposit operation
-#[derive(Debug, Clone)]
-pub struct DepositOutputs {
-    /// New encrypted balance after deposit
-    pub new_balance: Enc<Shared, u64>,
-    
-    /// Updated encrypted total deposits
-    pub new_total_deposits: Enc<Shared, u64>,
-    
-    /// Updated encrypted transaction count
-    pub new_tx_count: Enc<Shared, u64>,
+    pub amount: u64,
 }
 
 /// Inputs for withdrawing funds from encrypted vault
