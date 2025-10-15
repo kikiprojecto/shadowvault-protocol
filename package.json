@@ -11,6 +11,7 @@
     "test": "tsx tests/shadowvault.ts"
   },
   "dependencies": {
+    "@arcium-hq/client": "^0.1.0",
     "@coral-xyz/anchor": "^0.29.0",
     "@jup-ag/api": "^6.0.0",
     "@radix-ui/react-slot": "^1.0.2",
