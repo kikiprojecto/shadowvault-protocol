@@ -110,6 +110,12 @@ pub mod shadowvault_mxe {
         msg!("Initializing encrypted vault for owner: {}", ctx.accounts.owner.key());
         msg!("Initial encrypted balance: {}", initial_balance);
         
+        // Validate initial balance is not zero
+        require!(
+            initial_balance > 0,
+            VaultError::InvalidVaultState
+        );
+        
         // Create encrypted inputs for MPC computation
         let inputs = VaultInitInputs {
             initial_balance,
@@ -229,6 +235,12 @@ pub mod shadowvault_mxe {
     ) -> Result<()> {
         msg!("Processing deposit for vault: {}", ctx.accounts.vault_metadata.key());
         msg!("Deposit amount (encrypted): {}", amount);
+        
+        // Validate deposit amount is greater than zero
+        require!(
+            amount > 0,
+            VaultError::InvalidVaultState
+        );
         
         // Validate vault is initialized
         require!(
@@ -488,6 +500,12 @@ pub mod shadowvault_mxe {
         msg!("Processing withdrawal for vault: {}", ctx.accounts.vault_metadata.key());
         msg!("Withdrawal amount (encrypted): {}", amount);
         
+        // Validate withdrawal amount is greater than zero
+        require!(
+            amount > 0,
+            VaultError::InvalidVaultState
+        );
+        
         // Validate vault is initialized
         require!(
             ctx.accounts.vault_metadata.initialized,
@@ -648,6 +666,18 @@ pub mod shadowvault_mxe {
         msg!("From vault: {}", ctx.accounts.from_vault_metadata.key());
         msg!("To vault: {}", ctx.accounts.to_vault_metadata.key());
         msg!("Transfer amount (encrypted): {}", amount);
+        
+        // Validate transfer amount is greater than zero
+        require!(
+            amount > 0,
+            VaultError::InvalidVaultState
+        );
+        
+        // Validate vaults are different (cannot transfer to self)
+        require!(
+            ctx.accounts.from_vault_metadata.key() != ctx.accounts.to_vault_metadata.key(),
+            VaultError::SelfTransferNotAllowed
+        );
         
         // Validate source vault is initialized
         require!(
