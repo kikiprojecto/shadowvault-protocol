@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use arcium_mpc_sdk::{Enc, Shared};
 use encrypted_ixs::{
     AddTogetherInputs, AddTogetherOutputs, VaultInitInputs, VaultInitOutputs, VaultAccount,
+    DepositInputs,
 };
 
 declare_id!("Br2ApMKRBGKfiCgmccs3yhFkQpsERND7ZA9i4Q3QRj97");
@@ -154,6 +155,9 @@ pub mod shadowvault_mxe {
         // Store encrypted vault data
         let vault_data = &mut ctx.accounts.vault_data;
         vault_data.encrypted_balance = result.balance;
+        vault_data.encrypted_total_deposits = 0; // Initialize to 0
+        vault_data.encrypted_total_withdrawals = 0; // Initialize to 0
+        vault_data.encrypted_tx_count = 0; // Initialize to 0
         vault_data.owner = result.owner;
         vault_data.is_active = result.is_active;
         vault_data.created_at = result.created_at;
@@ -167,6 +171,128 @@ pub mod shadowvault_mxe {
         msg!("Owner: {:?}", vault_data.owner);
         msg!("Active: {}", vault_data.is_active);
         msg!("Created at: {}", vault_data.created_at);
+        
+        Ok(())
+    }
+
+    // ============================================================================
+    // DEPOSIT OPERATION - ENCRYPTED DEPOSIT TO VAULT
+    // ============================================================================
+
+    /// Initialize computation definition for deposit
+    pub fn init_deposit_comp_def(
+        ctx: Context<InitDepositCompDef>
+    ) -> Result<()> {
+        msg!("Initializing deposit computation definition");
+        
+        // Initialize computation definition for encrypted deposit
+        arcium_mpc_sdk::init_comp_def::<(VaultAccount, DepositInputs), VaultAccount>(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+        )?;
+        
+        msg!("Deposit computation definition initialized");
+        Ok(())
+    }
+
+    /// Queue encrypted deposit computation
+    /// 
+    /// This function:
+    /// 1. Validates vault ownership
+    /// 2. Loads current encrypted vault state
+    /// 3. Creates encrypted deposit inputs
+    /// 4. Queues computation to Arcium MPC network
+    /// 5. Sets up callback to update vault
+    pub fn deposit(
+        ctx: Context<Deposit>,
+        amount: u64,
+    ) -> Result<()> {
+        msg!("Processing deposit for vault: {}", ctx.accounts.vault_metadata.key());
+        msg!("Deposit amount (encrypted): {}", amount);
+        
+        // Validate vault is initialized
+        require!(
+            ctx.accounts.vault_metadata.initialized,
+            VaultError::VaultNotInitialized
+        );
+        
+        // Validate vault is active
+        require!(
+            ctx.accounts.vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
+        // Validate owner
+        require!(
+            ctx.accounts.owner.key() == ctx.accounts.vault_metadata.owner,
+            VaultError::UnauthorizedAccess
+        );
+        
+        // Load current vault state for MPC computation
+        let current_vault = VaultAccount {
+            encrypted_balance: ctx.accounts.vault_data.encrypted_balance,
+            encrypted_total_deposits: ctx.accounts.vault_data.encrypted_total_deposits,
+            encrypted_total_withdrawals: ctx.accounts.vault_data.encrypted_total_withdrawals,
+            encrypted_tx_count: ctx.accounts.vault_data.encrypted_tx_count,
+            owner: ctx.accounts.vault_data.owner,
+            created_at: ctx.accounts.vault_data.created_at,
+            is_active: ctx.accounts.vault_data.is_active,
+        };
+        
+        // Create encrypted deposit inputs
+        let deposit_inputs = DepositInputs {
+            amount,
+        };
+        
+        // Queue computation to Arcium MPC network
+        // The MPC will perform: new_balance = current_balance + amount (encrypted)
+        arcium_mpc_sdk::queue_computation(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.computation,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+            (current_vault, deposit_inputs),
+        )?;
+        
+        // Update metadata to track computation
+        let vault_metadata = &mut ctx.accounts.vault_metadata;
+        vault_metadata.computation_queued = true;
+        
+        msg!("Deposit computation queued successfully");
+        Ok(())
+    }
+
+    /// Handle callback from deposit computation
+    /// 
+    /// This function:
+    /// 1. Receives updated encrypted vault from MPC
+    /// 2. Updates vault account with new encrypted balance
+    /// 3. Updates total deposits and transaction count
+    /// 4. Marks computation as complete
+    pub fn deposit_callback(
+        ctx: Context<DepositCallback>
+    ) -> Result<()> {
+        msg!("Processing deposit callback");
+        
+        // Get encrypted result from MPC computation
+        let updated_vault: VaultAccount = arcium_mpc_sdk::get_computation_result(
+            &ctx.accounts.computation,
+        )?;
+        
+        // Update vault data with new encrypted values
+        let vault_data = &mut ctx.accounts.vault_data;
+        vault_data.encrypted_balance = updated_vault.encrypted_balance;
+        vault_data.encrypted_total_deposits = updated_vault.encrypted_total_deposits;
+        vault_data.encrypted_tx_count = updated_vault.encrypted_tx_count;
+        
+        // Update metadata
+        let vault_metadata = &mut ctx.accounts.vault_metadata;
+        vault_metadata.computation_queued = false;
+        
+        msg!("Deposit completed successfully");
+        msg!("New encrypted balance stored");
+        msg!("Transaction count updated");
         
         Ok(())
     }
@@ -303,6 +429,85 @@ pub struct InitializeVaultCallback<'info> {
 }
 
 // ============================================================================
+// ACCOUNT STRUCTS - DEPOSIT OPERATION
+// ============================================================================
+
+#[derive(Accounts)]
+pub struct InitDepositCompDef<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// CHECK: Computation definition account for deposit
+    #[account(mut)]
+    pub comp_def: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Deposit<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// The owner of the vault (must sign)
+    pub owner: Signer<'info>,
+    
+    /// CHECK: Computation definition account
+    pub comp_def: AccountInfo<'info>,
+    
+    /// CHECK: Computation account for this deposit
+    #[account(mut)]
+    pub computation: AccountInfo<'info>,
+    
+    /// Vault metadata PDA
+    #[account(
+        mut,
+        seeds = [b"vault_metadata", owner.key().as_ref()],
+        bump = vault_metadata.bump,
+        constraint = vault_metadata.owner == owner.key() @ VaultError::UnauthorizedAccess
+    )]
+    pub vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Vault data account
+    #[account(
+        mut,
+        seeds = [b"vault_data", owner.key().as_ref()],
+        bump,
+        constraint = vault_data.owner == owner.key().to_bytes() @ VaultError::UnauthorizedAccess
+    )]
+    pub vault_data: Account<'info, VaultData>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct DepositCallback<'info> {
+    /// CHECK: Computation account
+    pub computation: AccountInfo<'info>,
+    
+    /// Vault metadata PDA
+    #[account(
+        mut,
+        seeds = [b"vault_metadata", vault_metadata.owner.as_ref()],
+        bump = vault_metadata.bump
+    )]
+    pub vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Vault data account to update
+    #[account(
+        mut,
+        seeds = [b"vault_data", vault_metadata.owner.as_ref()],
+        bump
+    )]
+    pub vault_data: Account<'info, VaultData>,
+    
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+// ============================================================================
 // DATA STRUCTS
 // ============================================================================
 
@@ -332,6 +537,15 @@ pub struct VaultData {
     /// Encrypted balance (stored as u64, but represents encrypted value)
     pub encrypted_balance: u64,
     
+    /// Encrypted total deposits
+    pub encrypted_total_deposits: u64,
+    
+    /// Encrypted total withdrawals
+    pub encrypted_total_withdrawals: u64,
+    
+    /// Encrypted transaction count
+    pub encrypted_tx_count: u64,
+    
     /// Owner public key
     pub owner: [u8; 32],
     
@@ -343,5 +557,27 @@ pub struct VaultData {
 }
 
 impl VaultData {
-    pub const SPACE: usize = 8 + 32 + 1 + 8; // u64 + [u8;32] + bool + i64
+    pub const SPACE: usize = 8 + 8 + 8 + 8 + 32 + 1 + 8; // 4 u64s + [u8;32] + bool + i64
+}
+
+// ============================================================================
+// ERROR CODES
+// ============================================================================
+
+#[error_code]
+pub enum VaultError {
+    #[msg("Vault is not initialized")]
+    VaultNotInitialized,
+    
+    #[msg("Vault is not active")]
+    VaultNotActive,
+    
+    #[msg("Unauthorized access to vault")]
+    UnauthorizedAccess,
+    
+    #[msg("Computation already queued")]
+    ComputationQueued,
+    
+    #[msg("Invalid vault state")]
+    InvalidVaultState,
 }
