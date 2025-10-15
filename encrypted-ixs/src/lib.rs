@@ -1,4 +1,8 @@
-use arcium_mpc_sdk::{Enc, Shared};
+use arcium_mpc_sdk::{instruction, Enc, Shared};
+
+// ============================================================================
+// REFERENCE EXAMPLE - SIMPLE ENCRYPTED ADDITION
+// ============================================================================
 
 /// Example: Simple encrypted addition (kept as reference)
 /// This demonstrates basic Arcium MPC usage
@@ -11,6 +15,16 @@ pub struct AddTogetherInputs {
 #[derive(Debug, Clone)]
 pub struct AddTogetherOutputs {
     pub sum: Enc<Shared, u64>,
+}
+
+/// Reference MPC instruction: Add two encrypted numbers
+#[instruction]
+pub fn add_together(inputs: Enc<Shared, AddTogetherInputs>) -> Enc<Shared, AddTogetherOutputs> {
+    let a = inputs.a;
+    let b = inputs.b;
+    let sum = a + b;
+    
+    AddTogetherOutputs { sum }
 }
 
 // ============================================================================
@@ -47,20 +61,64 @@ pub struct VaultAccount {
 #[derive(Debug, Clone)]
 pub struct VaultInitInputs {
     /// Initial encrypted balance (usually 0, but encrypted)
-    pub initial_balance: Enc<Shared, u64>,
+    pub initial_balance: u64,
     
     /// Owner's public key (not encrypted - needed for access control)
     pub owner_pubkey: [u8; 32],
-    
-    /// Vault creation timestamp
-    pub timestamp: i64,
 }
 
-/// Outputs from vault initialization
+/// Outputs from vault initialization (the complete vault account)
 #[derive(Debug, Clone)]
 pub struct VaultInitOutputs {
-    /// The initialized vault account with encrypted fields
-    pub vault: VaultAccount,
+    /// Encrypted balance
+    pub balance: u64,
+    
+    /// Owner's public key
+    pub owner: [u8; 32],
+    
+    /// Vault active status
+    pub is_active: bool,
+    
+    /// Creation timestamp
+    pub created_at: i64,
+}
+
+// ============================================================================
+// MPC INSTRUCTIONS - VAULT OPERATIONS
+// ============================================================================
+
+/// Initialize a new encrypted vault
+/// 
+/// This MPC instruction creates a new vault with an encrypted initial balance.
+/// All sensitive data remains encrypted throughout the computation.
+/// 
+/// # Arguments
+/// * `inputs` - Encrypted VaultInitInputs containing initial balance and owner
+/// 
+/// # Returns
+/// * Encrypted VaultInitOutputs with the initialized vault data
+#[instruction]
+pub fn initialize_vault(
+    inputs: Enc<Shared, VaultInitInputs>
+) -> Enc<Shared, VaultInitOutputs> {
+    // Extract encrypted initial balance
+    let initial_balance = inputs.initial_balance;
+    
+    // Extract owner pubkey (passed through, not encrypted in MPC)
+    let owner_pubkey = inputs.owner_pubkey;
+    
+    // Placeholder timestamp (in production, this would come from Solana clock)
+    let timestamp: i64 = 1729000000; // Oct 15, 2024 placeholder
+    
+    // Create the vault account with encrypted balance
+    let vault_outputs = VaultInitOutputs {
+        balance: initial_balance,
+        owner: owner_pubkey,
+        is_active: true,
+        created_at: timestamp,
+    };
+    
+    vault_outputs
 }
 
 /// Inputs for depositing funds into encrypted vault
