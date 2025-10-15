@@ -148,10 +148,28 @@ pub mod shadowvault_mxe {
     ) -> Result<()> {
         msg!("Processing initialize_vault callback");
         
+        // Validate vault is not already initialized
+        require!(
+            !ctx.accounts.vault_metadata.initialized,
+            VaultError::InvalidVaultState
+        );
+        
         // Get encrypted result from MPC computation
         let result: VaultInitOutputs = arcium_mpc_sdk::get_computation_result(
             &ctx.accounts.computation,
-        )?;
+        ).map_err(|_| VaultError::AbortedComputation)?;
+        
+        // Validate owner matches metadata
+        require!(
+            result.owner == ctx.accounts.vault_metadata.owner.to_bytes(),
+            VaultError::InvalidOwner
+        );
+        
+        // Validate vault is active
+        require!(
+            result.is_active,
+            VaultError::VaultNotActive
+        );
         
         // Store encrypted vault data
         let vault_data = &mut ctx.accounts.vault_data;
@@ -276,10 +294,22 @@ pub mod shadowvault_mxe {
     ) -> Result<()> {
         msg!("Processing deposit callback");
         
+        // Validate vault is still active
+        require!(
+            ctx.accounts.vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
         // Get encrypted result from MPC computation
         let updated_vault: VaultAccount = arcium_mpc_sdk::get_computation_result(
             &ctx.accounts.computation,
-        )?;
+        ).map_err(|_| VaultError::AbortedComputation)?;
+        
+        // Validate vault owner matches
+        require!(
+            updated_vault.owner == ctx.accounts.vault_data.owner,
+            VaultError::InvalidOwner
+        );
         
         // Update vault data with new encrypted values
         let vault_data = &mut ctx.accounts.vault_data;
@@ -393,10 +423,16 @@ pub mod shadowvault_mxe {
     ) -> Result<()> {
         msg!("Processing check_balance_sufficient callback");
         
+        // Validate vault is initialized
+        require!(
+            ctx.accounts.vault_metadata.initialized,
+            VaultError::VaultNotInitialized
+        );
+        
         // Get encrypted result from MPC computation
         let check_result: BalanceCheckResult = arcium_mpc_sdk::get_computation_result(
             &ctx.accounts.computation,
-        )?;
+        ).map_err(|_| VaultError::AbortedComputation)?;
         
         // Get current timestamp
         let clock = Clock::get()?;
@@ -526,10 +562,16 @@ pub mod shadowvault_mxe {
     ) -> Result<()> {
         msg!("Processing withdraw callback");
         
+        // Validate vault is still active
+        require!(
+            ctx.accounts.vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
         // Get encrypted result from MPC computation
         let withdraw_result: WithdrawResult = arcium_mpc_sdk::get_computation_result(
             &ctx.accounts.computation,
-        )?;
+        ).map_err(|_| VaultError::AbortedComputation)?;
         
         // Get current timestamp
         let clock = Clock::get()?;
@@ -561,6 +603,8 @@ pub mod shadowvault_mxe {
         } else {
             msg!("Withdrawal failed: insufficient balance");
             msg!("Vault state unchanged (balance insufficient)");
+            // Note: We don't return an error here because the MPC computation
+            // succeeded, it just determined the balance was insufficient
         }
         
         Ok(())
@@ -711,10 +755,36 @@ pub mod shadowvault_mxe {
     ) -> Result<()> {
         msg!("Processing transfer callback");
         
+        // Validate both vaults are still active
+        require!(
+            ctx.accounts.from_vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        require!(
+            ctx.accounts.to_vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
+        // Validate vaults are different
+        require!(
+            ctx.accounts.from_vault_metadata.key() != ctx.accounts.to_vault_metadata.key(),
+            VaultError::SelfTransferNotAllowed
+        );
+        
         // Get encrypted result from MPC computation
         let transfer_result: TransferResult = arcium_mpc_sdk::get_computation_result(
             &ctx.accounts.computation,
-        )?;
+        ).map_err(|_| VaultError::AbortedComputation)?;
+        
+        // Validate vault owners match
+        require!(
+            transfer_result.updated_from_vault.owner == ctx.accounts.from_vault_data.owner,
+            VaultError::InvalidOwner
+        );
+        require!(
+            transfer_result.updated_to_vault.owner == ctx.accounts.to_vault_data.owner,
+            VaultError::InvalidOwner
+        );
         
         // Get current timestamp
         let clock = Clock::get()?;
@@ -742,6 +812,8 @@ pub mod shadowvault_mxe {
             // FAILURE: Don't update anything (balances unchanged)
             msg!("Transfer failed: insufficient balance in source vault");
             msg!("Both vaults unchanged (balance insufficient)");
+            // Note: We don't return an error here because the MPC computation
+            // succeeded, it just determined the balance was insufficient
         }
         
         // Update source vault metadata
@@ -1302,6 +1374,18 @@ pub enum VaultError {
     
     #[msg("Invalid vault state")]
     InvalidVaultState,
+    
+    #[msg("Insufficient balance for operation")]
+    InsufficientBalance,
+    
+    #[msg("Invalid vault owner")]
+    InvalidOwner,
+    
+    #[msg("Computation aborted")]
+    AbortedComputation,
+    
+    #[msg("Transfer to same vault not allowed")]
+    SelfTransferNotAllowed,
 }
 
 // ============================================================================
