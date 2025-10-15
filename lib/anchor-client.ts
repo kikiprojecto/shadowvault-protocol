@@ -1,22 +1,63 @@
-import { AnchorProvider, Program, Idl } from "@coral-xyz/anchor";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { AnchorProvider, Program, Idl, BN } from "@coral-xyz/anchor";
+import { Connection, PublicKey, Commitment } from "@solana/web3.js";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM_ID, RPC_ENDPOINT } from "./constants";
-import idl from "../target/idl/shadowvault_mxe.json";
+import { SHADOWVAULT_MXE_IDL } from "./idl";
 
-export type ShadowvaultMxe = Program;
+// Type the IDL
+export type ShadowvaultMxeIDL = {
+  version: string;
+  name: string;
+  instructions: any[];
+  accounts: any[];
+  types: any[];
+  events: any[];
+  errors: any[];
+  metadata?: {
+    address: string;
+  };
+};
+
+// Use the IDL
+const idl = SHADOWVAULT_MXE_IDL as Idl;
+
+// Program type
+export type ShadowvaultMxeProgram = Program<ShadowvaultMxeIDL>;
 
 /**
  * Initialize Anchor program with wallet and connection
+ * @param wallet - Anchor wallet adapter
+ * @param connection - Optional Solana connection (defaults to RPC_ENDPOINT)
+ * @returns Anchor Program instance
  */
-export function getProgram(wallet: AnchorWallet): Program {
-  const connection = new Connection(RPC_ENDPOINT, "confirmed");
-  const provider = new AnchorProvider(connection, wallet, {
+export function getProgram(
+  wallet: AnchorWallet,
+  connection?: Connection
+): ShadowvaultMxeProgram {
+  const conn = connection || new Connection(RPC_ENDPOINT, "confirmed");
+  
+  const provider = new AnchorProvider(conn, wallet, {
     commitment: "confirmed",
     preflightCommitment: "processed",
   });
 
-  return new Program(idl as Idl, PROGRAM_ID, provider);
+  return new Program(idl, PROGRAM_ID, provider) as ShadowvaultMxeProgram;
+}
+
+/**
+ * Get program with custom connection
+ * @param wallet - Anchor wallet adapter
+ * @param rpcUrl - Custom RPC URL
+ * @param commitment - Transaction commitment level
+ * @returns Anchor Program instance
+ */
+export function getProgramWithConnection(
+  wallet: AnchorWallet,
+  rpcUrl: string,
+  commitment: Commitment = "confirmed"
+): ShadowvaultMxeProgram {
+  const connection = new Connection(rpcUrl, commitment);
+  return getProgram(wallet, connection);
 }
 
 /**
@@ -56,16 +97,40 @@ export async function vaultExists(
 }
 
 /**
+ * Vault account types
+ */
+export interface VaultMetadata {
+  owner: PublicKey;
+  bump: number;
+  computationQueued: boolean;
+  initialized: boolean;
+}
+
+export interface VaultData {
+  encryptedBalance: BN;
+  encryptedTotalDeposits: BN;
+  encryptedTotalWithdrawals: BN;
+  encryptedTxCount: BN;
+  owner: number[];
+  isActive: boolean;
+  createdAt: BN;
+}
+
+/**
  * Get vault balance (encrypted)
+ * @param program - Anchor program instance
+ * @param owner - Vault owner public key
+ * @returns Encrypted balance as BN or null if not found
  */
 export async function getVaultBalance(
-  program: Program,
+  program: ShadowvaultMxeProgram,
   owner: PublicKey
-): Promise<bigint | null> {
+): Promise<BN | null> {
   try {
     const [vaultData] = getVaultDataPDA(owner);
-    const vault = await program.account.vaultData.fetch(vaultData);
-    return vault.encryptedBalance;
+    const vault = await program.account?.vaultData?.fetch(vaultData);
+    if (!vault) return null;
+    return (vault as any).encryptedBalance as BN;
   } catch (error) {
     console.error("Error fetching vault balance:", error);
     return null;
@@ -74,14 +139,18 @@ export async function getVaultBalance(
 
 /**
  * Get vault metadata
+ * @param program - Anchor program instance
+ * @param owner - Vault owner public key
+ * @returns Vault metadata or null if not found
  */
 export async function getVaultMetadata(
-  program: Program,
+  program: ShadowvaultMxeProgram,
   owner: PublicKey
-): Promise<any | null> {
+): Promise<VaultMetadata | null> {
   try {
     const [vaultMetadata] = getVaultMetadataPDA(owner);
-    return await program.account.vaultMetadata.fetch(vaultMetadata);
+    const metadata = await program.account?.vaultMetadata?.fetch(vaultMetadata);
+    return metadata as VaultMetadata | null;
   } catch (error) {
     console.error("Error fetching vault metadata:", error);
     return null;
@@ -90,16 +159,37 @@ export async function getVaultMetadata(
 
 /**
  * Get vault data
+ * @param program - Anchor program instance
+ * @param owner - Vault owner public key
+ * @returns Vault data or null if not found
  */
 export async function getVaultData(
-  program: Program,
+  program: ShadowvaultMxeProgram,
   owner: PublicKey
-): Promise<any | null> {
+): Promise<VaultData | null> {
   try {
     const [vaultData] = getVaultDataPDA(owner);
-    return await program.account.vaultData.fetch(vaultData);
+    const data = await program.account?.vaultData?.fetch(vaultData);
+    return data as VaultData | null;
   } catch (error) {
     console.error("Error fetching vault data:", error);
     return null;
+  }
+}
+
+/**
+ * Get all vault accounts for a program
+ * @param program - Anchor program instance
+ * @returns Array of vault data accounts
+ */
+export async function getAllVaults(
+  program: ShadowvaultMxeProgram
+): Promise<Array<{ publicKey: PublicKey; account: VaultData }>> {
+  try {
+    const vaults = await program.account?.vaultData?.all();
+    return (vaults || []) as Array<{ publicKey: PublicKey; account: VaultData }>;
+  } catch (error) {
+    console.error("Error fetching all vaults:", error);
+    return [];
   }
 }
