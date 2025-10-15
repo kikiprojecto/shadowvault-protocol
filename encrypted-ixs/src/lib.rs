@@ -313,42 +313,31 @@ pub struct BalanceCheckResult {
     pub balance: u64,
 }
 
-/// Inputs for transferring between vaults (future feature)
+/// Inputs for transferring between vaults
 #[derive(Debug, Clone)]
 pub struct TransferInputs {
-    /// Source vault encrypted balance
-    pub source_balance: Enc<Shared, u64>,
+    /// Source vault (from which funds are transferred)
+    pub from_vault: VaultAccount,
     
-    /// Destination vault encrypted balance
-    pub dest_balance: Enc<Shared, u64>,
+    /// Destination vault (to which funds are transferred)
+    pub to_vault: VaultAccount,
     
-    /// Encrypted transfer amount
-    pub transfer_amount: Enc<Shared, u64>,
-    
-    /// Source vault transaction count
-    pub source_tx_count: Enc<Shared, u64>,
-    
-    /// Destination vault transaction count
-    pub dest_tx_count: Enc<Shared, u64>,
+    /// Encrypted amount to transfer
+    pub amount: u64,
 }
 
-/// Outputs from transfer operation
+/// Result from transfer operation
 #[derive(Debug, Clone)]
-pub struct TransferOutputs {
-    /// New source vault balance
-    pub new_source_balance: Enc<Shared, u64>,
+pub struct TransferResult {
+    /// Updated source vault (with reduced balance if successful)
+    pub updated_from_vault: VaultAccount,
     
-    /// New destination vault balance
-    pub new_dest_balance: Enc<Shared, u64>,
+    /// Updated destination vault (with increased balance if successful)
+    pub updated_to_vault: VaultAccount,
     
-    /// Updated source transaction count
-    pub new_source_tx_count: Enc<Shared, u64>,
-    
-    /// Updated destination transaction count
-    pub new_dest_tx_count: Enc<Shared, u64>,
-    
-    /// Encrypted success flag
-    pub success: Enc<Shared, bool>,
+    /// Encrypted flag indicating if transfer was successful
+    /// (prevents revealing balance through failed transfers)
+    pub success: bool,
 }
 
 // ============================================================================
