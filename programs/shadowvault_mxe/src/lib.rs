@@ -3,6 +3,7 @@ use arcium_mpc_sdk::{Enc, Shared};
 use encrypted_ixs::{
     AddTogetherInputs, AddTogetherOutputs, VaultInitInputs, VaultInitOutputs, VaultAccount,
     DepositInputs, BalanceCheckInputs, BalanceCheckResult, WithdrawInputs, WithdrawResult,
+    TransferInputs, TransferResult,
 };
 
 declare_id!("Br2ApMKRBGKfiCgmccs3yhFkQpsERND7ZA9i4Q3QRj97");
@@ -564,6 +565,138 @@ pub mod shadowvault_mxe {
         
         Ok(())
     }
+
+    // ============================================================================
+    // TRANSFER OPERATION - ENCRYPTED VAULT-TO-VAULT TRANSFER
+    // ============================================================================
+
+    /// Initialize computation definition for transfer
+    pub fn init_transfer_comp_def(
+        ctx: Context<InitTransferCompDef>
+    ) -> Result<()> {
+        msg!("Initializing transfer computation definition");
+        
+        // Initialize computation definition for encrypted vault-to-vault transfer
+        arcium_mpc_sdk::init_comp_def::<TransferInputs, TransferResult>(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+        )?;
+        
+        msg!("Transfer computation definition initialized");
+        Ok(())
+    }
+
+    /// Queue encrypted vault-to-vault transfer computation
+    /// 
+    /// This function:
+    /// 1. Validates both source and destination vaults exist and are active
+    /// 2. Validates source vault ownership (must sign)
+    /// 3. Loads both encrypted vault states
+    /// 4. Creates transfer inputs with both vaults and amount
+    /// 5. Queues computation to Arcium MPC network
+    /// 6. MPC performs balance check and atomic transfer
+    pub fn transfer(
+        ctx: Context<Transfer>,
+        amount: u64,
+    ) -> Result<()> {
+        msg!("Processing transfer between vaults");
+        msg!("From vault: {}", ctx.accounts.from_vault_metadata.key());
+        msg!("To vault: {}", ctx.accounts.to_vault_metadata.key());
+        msg!("Transfer amount (encrypted): {}", amount);
+        
+        // Validate source vault is initialized
+        require!(
+            ctx.accounts.from_vault_metadata.initialized,
+            VaultError::VaultNotInitialized
+        );
+        
+        // Validate destination vault is initialized
+        require!(
+            ctx.accounts.to_vault_metadata.initialized,
+            VaultError::VaultNotInitialized
+        );
+        
+        // Validate source vault is active
+        require!(
+            ctx.accounts.from_vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
+        // Validate destination vault is active
+        require!(
+            ctx.accounts.to_vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
+        // Validate source vault owner
+        require!(
+            ctx.accounts.from_owner.key() == ctx.accounts.from_vault_metadata.owner,
+            VaultError::UnauthorizedAccess
+        );
+        
+        // Validate no computation is already queued on source vault
+        require!(
+            !ctx.accounts.from_vault_metadata.computation_queued,
+            VaultError::ComputationQueued
+        );
+        
+        // Validate vaults are different (cannot transfer to self)
+        require!(
+            ctx.accounts.from_vault_metadata.key() != ctx.accounts.to_vault_metadata.key(),
+            VaultError::InvalidVaultState
+        );
+        
+        // Load source vault state for MPC computation
+        let from_vault = VaultAccount {
+            encrypted_balance: ctx.accounts.from_vault_data.encrypted_balance,
+            encrypted_total_deposits: ctx.accounts.from_vault_data.encrypted_total_deposits,
+            encrypted_total_withdrawals: ctx.accounts.from_vault_data.encrypted_total_withdrawals,
+            encrypted_tx_count: ctx.accounts.from_vault_data.encrypted_tx_count,
+            owner: ctx.accounts.from_vault_data.owner,
+            created_at: ctx.accounts.from_vault_data.created_at,
+            is_active: ctx.accounts.from_vault_data.is_active,
+        };
+        
+        // Load destination vault state for MPC computation
+        let to_vault = VaultAccount {
+            encrypted_balance: ctx.accounts.to_vault_data.encrypted_balance,
+            encrypted_total_deposits: ctx.accounts.to_vault_data.encrypted_total_deposits,
+            encrypted_total_withdrawals: ctx.accounts.to_vault_data.encrypted_total_withdrawals,
+            encrypted_tx_count: ctx.accounts.to_vault_data.encrypted_tx_count,
+            owner: ctx.accounts.to_vault_data.owner,
+            created_at: ctx.accounts.to_vault_data.created_at,
+            is_active: ctx.accounts.to_vault_data.is_active,
+        };
+        
+        // Create encrypted transfer inputs
+        let transfer_inputs = TransferInputs {
+            from_vault,
+            to_vault,
+            amount,
+        };
+        
+        // Queue computation to Arcium MPC network
+        // The MPC will:
+        // 1. Check if from_vault.balance >= amount (encrypted)
+        // 2. If sufficient: from_balance -= amount, to_balance += amount
+        // 3. If insufficient: both balances unchanged
+        // 4. Return both updated vaults and success flag
+        arcium_mpc_sdk::queue_computation(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.computation,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+            transfer_inputs,
+        )?;
+        
+        // Update source vault metadata to track computation
+        let from_vault_metadata = &mut ctx.accounts.from_vault_metadata;
+        from_vault_metadata.computation_queued = true;
+        
+        msg!("Transfer computation queued successfully");
+        Ok(())
+    }
 }
 
 // ============================================================================
@@ -969,6 +1102,78 @@ pub struct WithdrawCallback<'info> {
     
     #[account(mut)]
     pub payer: Signer<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+// ============================================================================
+// ACCOUNT STRUCTS - TRANSFER OPERATION
+// ============================================================================
+
+#[derive(Accounts)]
+pub struct InitTransferCompDef<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// CHECK: Computation definition account for transfer
+    #[account(mut)]
+    pub comp_def: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Transfer<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// The owner of the source vault (must sign)
+    pub from_owner: Signer<'info>,
+    
+    /// CHECK: Computation definition account
+    pub comp_def: AccountInfo<'info>,
+    
+    /// CHECK: Computation account for this transfer
+    #[account(mut)]
+    pub computation: AccountInfo<'info>,
+    
+    /// Source vault metadata PDA
+    #[account(
+        mut,
+        seeds = [b"vault_metadata", from_owner.key().as_ref()],
+        bump = from_vault_metadata.bump,
+        constraint = from_vault_metadata.owner == from_owner.key() @ VaultError::UnauthorizedAccess,
+        constraint = from_vault_metadata.initialized @ VaultError::VaultNotInitialized,
+        constraint = !from_vault_metadata.computation_queued @ VaultError::ComputationQueued
+    )]
+    pub from_vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Source vault data account
+    #[account(
+        seeds = [b"vault_data", from_owner.key().as_ref()],
+        bump,
+        constraint = from_vault_data.owner == from_owner.key().to_bytes() @ VaultError::UnauthorizedAccess,
+        constraint = from_vault_data.is_active @ VaultError::VaultNotActive
+    )]
+    pub from_vault_data: Account<'info, VaultData>,
+    
+    /// Destination vault metadata PDA
+    /// CHECK: We validate it exists and is initialized in the function
+    #[account(
+        seeds = [b"vault_metadata", to_vault_metadata.owner.as_ref()],
+        bump = to_vault_metadata.bump,
+        constraint = to_vault_metadata.initialized @ VaultError::VaultNotInitialized,
+        constraint = from_vault_metadata.key() != to_vault_metadata.key() @ VaultError::InvalidVaultState
+    )]
+    pub to_vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Destination vault data account
+    #[account(
+        seeds = [b"vault_data", to_vault_metadata.owner.as_ref()],
+        bump,
+        constraint = to_vault_data.is_active @ VaultError::VaultNotActive
+    )]
+    pub to_vault_data: Account<'info, VaultData>,
     
     pub system_program: Program<'info, System>,
 }
