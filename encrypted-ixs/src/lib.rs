@@ -270,6 +270,106 @@ pub fn withdraw(
     result
 }
 
+/// Transfer funds between encrypted vaults
+/// 
+/// This MPC instruction performs encrypted transfer with balance validation.
+/// The transfer only succeeds if from_vault.balance >= amount, and this check
+/// happens in encrypted space without revealing any balances.
+/// 
+/// # Arguments
+/// * `input_ctxt` - Encrypted TransferInputs containing both vaults and amount
+/// 
+/// # Returns
+/// * TransferResult with updated vaults and success flag
+#[instruction]
+pub fn transfer(
+    input_ctxt: Enc<Shared, TransferInputs>
+) -> Enc<Shared, TransferResult> {
+    // Extract source vault, destination vault, and transfer amount
+    let from_vault = input_ctxt.from_vault;
+    let to_vault = input_ctxt.to_vault;
+    let transfer_amount = input_ctxt.amount;
+    
+    // Get current encrypted balances
+    let from_balance = from_vault.encrypted_balance;
+    let to_balance = to_vault.encrypted_balance;
+    
+    // Check if source vault has sufficient balance (encrypted comparison)
+    let is_sufficient = from_balance >= transfer_amount;
+    
+    // Conditional encrypted arithmetic based on sufficiency check
+    // If sufficient: deduct from source, add to destination
+    // If insufficient: both balances unchanged
+    let new_from_balance = if is_sufficient {
+        from_balance - transfer_amount
+    } else {
+        from_balance
+    };
+    
+    let new_to_balance = if is_sufficient {
+        to_balance + transfer_amount
+    } else {
+        to_balance
+    };
+    
+    // Update source vault metrics only if successful
+    let new_from_total_withdrawals = if is_sufficient {
+        from_vault.encrypted_total_withdrawals + transfer_amount
+    } else {
+        from_vault.encrypted_total_withdrawals
+    };
+    
+    let new_from_tx_count = if is_sufficient {
+        from_vault.encrypted_tx_count + 1u64
+    } else {
+        from_vault.encrypted_tx_count
+    };
+    
+    // Update destination vault metrics only if successful
+    let new_to_total_deposits = if is_sufficient {
+        to_vault.encrypted_total_deposits + transfer_amount
+    } else {
+        to_vault.encrypted_total_deposits
+    };
+    
+    let new_to_tx_count = if is_sufficient {
+        to_vault.encrypted_tx_count + 1u64
+    } else {
+        to_vault.encrypted_tx_count
+    };
+    
+    // Create updated source vault
+    let updated_from_vault = VaultAccount {
+        encrypted_balance: new_from_balance,
+        encrypted_total_deposits: from_vault.encrypted_total_deposits,
+        encrypted_total_withdrawals: new_from_total_withdrawals,
+        encrypted_tx_count: new_from_tx_count,
+        owner: from_vault.owner,
+        created_at: from_vault.created_at,
+        is_active: from_vault.is_active,
+    };
+    
+    // Create updated destination vault
+    let updated_to_vault = VaultAccount {
+        encrypted_balance: new_to_balance,
+        encrypted_total_deposits: new_to_total_deposits,
+        encrypted_total_withdrawals: to_vault.encrypted_total_withdrawals,
+        encrypted_tx_count: new_to_tx_count,
+        owner: to_vault.owner,
+        created_at: to_vault.created_at,
+        is_active: to_vault.is_active,
+    };
+    
+    // Return result with both updated vaults and success flag
+    let result = TransferResult {
+        updated_from_vault,
+        updated_to_vault,
+        success: is_sufficient,
+    };
+    
+    result
+}
+
 /// Inputs for depositing funds into encrypted vault
 #[derive(Debug, Clone)]
 pub struct DepositInputs {
