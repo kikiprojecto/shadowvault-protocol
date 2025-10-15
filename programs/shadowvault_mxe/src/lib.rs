@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use arcium_mpc_sdk::{Enc, Shared};
 use encrypted_ixs::{
     AddTogetherInputs, AddTogetherOutputs, VaultInitInputs, VaultInitOutputs, VaultAccount,
-    DepositInputs,
+    DepositInputs, BalanceCheckInputs, BalanceCheckResult,
 };
 
 declare_id!("Br2ApMKRBGKfiCgmccs3yhFkQpsERND7ZA9i4Q3QRj97");
@@ -296,6 +296,124 @@ pub mod shadowvault_mxe {
         
         Ok(())
     }
+
+    // ============================================================================
+    // BALANCE CHECK OPERATION - ENCRYPTED BALANCE QUERY
+    // ============================================================================
+
+    /// Initialize computation definition for balance check
+    pub fn init_check_balance_sufficient_comp_def(
+        ctx: Context<InitCheckBalanceSufficientCompDef>
+    ) -> Result<()> {
+        msg!("Initializing check_balance_sufficient computation definition");
+        
+        // Initialize computation definition for encrypted balance check
+        arcium_mpc_sdk::init_comp_def::<(VaultAccount, BalanceCheckInputs), BalanceCheckResult>(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+        )?;
+        
+        msg!("Check balance sufficient computation definition initialized");
+        Ok(())
+    }
+
+    /// Queue encrypted balance check computation
+    /// 
+    /// This function:
+    /// 1. Validates vault ownership
+    /// 2. Loads current encrypted vault state
+    /// 3. Creates balance check inputs with required amount
+    /// 4. Queues computation to Arcium MPC network
+    /// 5. Sets up callback to emit result event
+    pub fn check_balance_sufficient(
+        ctx: Context<CheckBalanceSufficient>,
+        required_amount: u64,
+    ) -> Result<()> {
+        msg!("Checking balance sufficiency for vault: {}", ctx.accounts.vault_metadata.key());
+        msg!("Required amount (encrypted): {}", required_amount);
+        
+        // Validate vault is initialized
+        require!(
+            ctx.accounts.vault_metadata.initialized,
+            VaultError::VaultNotInitialized
+        );
+        
+        // Validate vault is active
+        require!(
+            ctx.accounts.vault_data.is_active,
+            VaultError::VaultNotActive
+        );
+        
+        // Validate owner
+        require!(
+            ctx.accounts.owner.key() == ctx.accounts.vault_metadata.owner,
+            VaultError::UnauthorizedAccess
+        );
+        
+        // Load current vault state for MPC computation
+        let current_vault = VaultAccount {
+            encrypted_balance: ctx.accounts.vault_data.encrypted_balance,
+            encrypted_total_deposits: ctx.accounts.vault_data.encrypted_total_deposits,
+            encrypted_total_withdrawals: ctx.accounts.vault_data.encrypted_total_withdrawals,
+            encrypted_tx_count: ctx.accounts.vault_data.encrypted_tx_count,
+            owner: ctx.accounts.vault_data.owner,
+            created_at: ctx.accounts.vault_data.created_at,
+            is_active: ctx.accounts.vault_data.is_active,
+        };
+        
+        // Create balance check inputs
+        let check_inputs = BalanceCheckInputs {
+            required_amount,
+        };
+        
+        // Queue computation to Arcium MPC network
+        // The MPC will perform: balance >= required_amount (encrypted comparison)
+        arcium_mpc_sdk::queue_computation(
+            &ctx.accounts.comp_def,
+            &ctx.accounts.computation,
+            &ctx.accounts.payer,
+            &ctx.accounts.system_program,
+            (current_vault, check_inputs),
+        )?;
+        
+        msg!("Balance check computation queued successfully");
+        Ok(())
+    }
+
+    /// Handle callback from balance check computation
+    /// 
+    /// This function:
+    /// 1. Receives encrypted balance check result from MPC
+    /// 2. Emits event with encrypted result
+    /// 3. Does NOT modify vault state (read-only operation)
+    pub fn check_balance_sufficient_callback(
+        ctx: Context<CheckBalanceSufficientCallback>
+    ) -> Result<()> {
+        msg!("Processing check_balance_sufficient callback");
+        
+        // Get encrypted result from MPC computation
+        let check_result: BalanceCheckResult = arcium_mpc_sdk::get_computation_result(
+            &ctx.accounts.computation,
+        )?;
+        
+        // Get current timestamp
+        let clock = Clock::get()?;
+        let timestamp = clock.unix_timestamp;
+        
+        // Emit event with encrypted result
+        emit!(BalanceCheckEvent {
+            vault: ctx.accounts.vault_metadata.key(),
+            is_sufficient: check_result.is_sufficient,
+            encrypted_balance: check_result.balance,
+            timestamp,
+        });
+        
+        msg!("Balance check completed successfully");
+        msg!("Result emitted as event (encrypted)");
+        
+        Ok(())
+    }
 }
 
 // ============================================================================
@@ -508,6 +626,69 @@ pub struct DepositCallback<'info> {
 }
 
 // ============================================================================
+// ACCOUNT STRUCTS - BALANCE CHECK OPERATION
+// ============================================================================
+
+#[derive(Accounts)]
+pub struct InitCheckBalanceSufficientCompDef<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// CHECK: Computation definition account for balance check
+    #[account(mut)]
+    pub comp_def: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CheckBalanceSufficient<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    /// The owner of the vault (must sign)
+    pub owner: Signer<'info>,
+    
+    /// CHECK: Computation definition account
+    pub comp_def: AccountInfo<'info>,
+    
+    /// CHECK: Computation account for this balance check
+    #[account(mut)]
+    pub computation: AccountInfo<'info>,
+    
+    /// Vault metadata PDA
+    #[account(
+        seeds = [b"vault_metadata", owner.key().as_ref()],
+        bump = vault_metadata.bump,
+        constraint = vault_metadata.owner == owner.key() @ VaultError::UnauthorizedAccess
+    )]
+    pub vault_metadata: Account<'info, VaultMetadata>,
+    
+    /// Vault data account (read-only for balance check)
+    #[account(
+        seeds = [b"vault_data", owner.key().as_ref()],
+        bump,
+        constraint = vault_data.owner == owner.key().to_bytes() @ VaultError::UnauthorizedAccess
+    )]
+    pub vault_data: Account<'info, VaultData>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CheckBalanceSufficientCallback<'info> {
+    /// CHECK: Computation account
+    pub computation: AccountInfo<'info>,
+    
+    /// Vault metadata PDA (read-only)
+    #[account(
+        seeds = [b"vault_metadata", vault_metadata.owner.as_ref()],
+        bump = vault_metadata.bump
+    )]
+    pub vault_metadata: Account<'info, VaultMetadata>,
+}
+
+// ============================================================================
 // DATA STRUCTS
 // ============================================================================
 
@@ -580,4 +761,24 @@ pub enum VaultError {
     
     #[msg("Invalid vault state")]
     InvalidVaultState,
+}
+
+// ============================================================================
+// EVENTS
+// ============================================================================
+
+/// Event emitted when balance check is completed
+#[event]
+pub struct BalanceCheckEvent {
+    /// Vault public key
+    pub vault: Pubkey,
+    
+    /// Encrypted result: true if balance >= required_amount
+    pub is_sufficient: bool,
+    
+    /// Current encrypted balance (still encrypted)
+    pub encrypted_balance: u64,
+    
+    /// Timestamp of the check
+    pub timestamp: i64,
 }
