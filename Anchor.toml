@@ -1,18 +1,19 @@
+[toolchain]
+package_manager = "yarn"
+
 [features]
-seeds = true
+resolution = true
 skip-lint = false
 
+[programs.localnet]
+shadowvault_mxe = "ByVTRs3qDorPyoEX2aBFPVqt62VWpAQMX3hvz6RWHReG"
+
 [registry]
-url = "https://anchor.projectserum.com"
+url = "https://api.apr.dev"
 
 [provider]
-cluster = "testnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
-[programs.testnet]
-shadowvault = "ShdwVlt1111111111111111111111111111111111111"
-
 [scripts]
-# Runs the Next.js tests which include Anchor integration via ts-mocha
-# Use: `anchor test` or `npm run test`
-test = "npm run test"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 \"tests/**/*.ts\""
