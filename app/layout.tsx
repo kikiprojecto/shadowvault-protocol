@@ -1,34 +1,28 @@
-import './globals.css'
-import '@solana/wallet-adapter-react-ui/styles.css'
-import type { Metadata } from 'next'
-import { ReactNode } from 'react'
-import { WalletContextProvider } from '../components/WalletProvider'
+import type React from "react"
+import type { Metadata } from "next"
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google"
+import "./globals.css"
+
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk" })
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono" })
 
 export const metadata: Metadata = {
-  title: 'ShadowVault Protocol - Privacy-First Vault System',
-  description: 'Encrypted vault system powered by Arcium MPC. Deposit, withdraw, and transfer funds with complete privacy on Solana.',
-  keywords: ['DeFi', 'Solana', 'Privacy', 'Arcium', 'MPC', 'Encrypted Vaults', 'Private Transactions'],
-  authors: [{ name: 'ShadowVault Team' }],
-  openGraph: {
-    title: 'ShadowVault Protocol - Privacy-First Vault System',
-    description: 'Encrypted vault system powered by Arcium MPC on Solana',
-    type: 'website',
-    locale: 'en_US',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'ShadowVault Protocol',
-    description: 'Privacy-first encrypted vaults on Solana',
-  },
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
-  themeColor: '#7c3aed',
+  title: "ShadowVault AI - Private DeFi Intelligence",
+  description:
+    "AI-powered portfolio insights without exposing your strategies. Military-grade encryption meets institutional DeFi.",
+    generator: 'v0.app'
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className="antialiased bg-gray-950 text-white">
-        <WalletContextProvider>{children}</WalletContextProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} font-sans`}>
+        {children}
       </body>
     </html>
   )
